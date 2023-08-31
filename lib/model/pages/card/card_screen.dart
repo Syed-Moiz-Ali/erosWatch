@@ -1,0 +1,510 @@
+// import 'dart:html';
+// ignore_for_file: must_be_immutable, library_private_types_in_public_api
+
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+
+import 'package:eroswatch/helper/videos.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:eroswatch/video_player/video_player.dart';
+import 'package:eroswatch/components/api_service.dart';
+import '../detail_screen.dart';
+
+class CardScreen extends StatefulWidget {
+  final List<Videos> content;
+  bool fav;
+
+  CardScreen({
+    Key? key,
+    required this.content,
+    this.fav = false,
+  }) : super(key: key);
+
+  @override
+  _CardScreenState createState() => _CardScreenState();
+}
+
+class _CardScreenState extends State<CardScreen> {
+  final ChromeSafariBrowser browser = ChromeSafariBrowser();
+  List<Videos> favorites = [];
+  bool changeOnTap = true;
+  // final Map<int, bool> _isPlayingMap =
+  //     {};
+  int _currentPlayingIndex = -1;
+  @override
+  void initState() {
+    super.initState();
+    WallpaperStorage.getWallpapers().then((value) => loadFavorites());
+
+    // _isPlaying = false;
+  }
+
+  List<ImageData> imageList = [
+    ImageData(
+      imageUrl:
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSsLWVn6ZOrtsgl4lhc4C9DnRGk8ituA04w&usqp=CAU',
+      title: 'Image 2',
+    ),
+  ];
+  Random random = Random();
+  late int randomIndex = random.nextInt(imageList.length);
+
+// Access the randomly selected image and its corresponding URL
+  late ImageData randomImage = imageList[randomIndex];
+  late String demoimageUrl = randomImage.imageUrl;
+  late String demotitle = randomImage.title;
+
+  final demoVideo =
+      "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4";
+
+  text(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      // decoration: BoxDecoration(
+      //   color: Colors.black45,
+      //   borderRadius: BorderRadius.circular(3),
+      // ),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 11, color: Colors.black),
+      ),
+    );
+  }
+
+  // final Uri _url = Uri.parse('https://flutter.dev');
+  // Future<void> _launchUrl() async {
+  //   final Uri url = Uri.parse(
+  //       'https://alterassumeaggravate.com/vxzhm5ur2?key=67878f8f4b7b02dba995a675709106f1');
+  //   setState(() {
+  //     changeOnTap = false;
+  //   });
+  //   // if (!await launchUrl(
+  //   //   url,
+  //   // )) {
+  //   //   throw Exception('Could not launch $url');
+  //   // }
+  //   await browser.open(
+  //     url: url,
+  //     options: ChromeSafariBrowserClassOptions(
+  //         android: AndroidChromeCustomTabsOptions()),
+  //   );
+  // }
+
+  late final String adLink1 = 'https://alterassumeaggravate.com/';
+  late final String adLink2 = 'https://www.liquidfire.mobi/';
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredContent = widget.content
+        .where((videos) => videos.title != '' && videos.title.isNotEmpty)
+        .toList();
+    double screenWidth = MediaQuery.of(context).size.width;
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Center(
+          child: Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: filteredContent.asMap().entries.map((entry) {
+              final index = entry.key;
+              final videos = entry.value;
+              final isPlaying = index == _currentPlayingIndex;
+
+              return GestureDetector(
+                onTap: () {
+                  // videos.image.contains(adLink1) ||
+                  //         videos.image.contains(adLink2)
+                  //     ? launchAdsUrl(context, browser)
+                  //     :
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          // AdCard()
+                          DetailScreen(id: videos.id),
+                    ),
+                  ).then((_) {
+                    // Future.delayed(const Duration(seconds: 8), () {
+
+                    // });
+                  });
+                  loadFavorites();
+                },
+
+                onHorizontalDragStart: (details) {
+                  setState(() {
+                    _currentPlayingIndex = index;
+                  });
+                },
+                onHorizontalDragEnd: (details) {
+                  _currentPlayingIndex = index;
+                },
+                // onLongPress: () {
+                //   toggleFavorite(videos);
+                // },
+                child: SizedBox(
+                  width: screenWidth <= 600 ? screenWidth : 250,
+                  height: 300,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(1.0),
+                            child: Container(
+                              height: 240,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 2.0),
+                              width: screenWidth <= 600 ? screenWidth : 250,
+                              child: videos.image.contains(adLink1) ||
+                                      videos.image.contains(adLink2)
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      child: WebViewWidget(videos: videos),
+                                    )
+                                  : isPlaying
+                                      ? CustomVideoPlayer(
+                                          videoUrl: videos.preview,
+                                        )
+                                      : ImageComponent(
+                                          imagePath: videos.image,
+                                          title: videos.title,
+                                          time: videos.time,
+                                          duration: videos.duration,
+                                        ),
+                            ),
+                          ),
+                          if (!videos.image.contains(adLink1) ||
+                              !videos.image.contains(adLink2))
+                            Positioned(
+                              bottom: 20,
+                              right: 20,
+                              child: GestureDetector(
+                                onTap: () {
+                                  toggleFavorite(videos);
+                                },
+                                child: Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.circular(50000),
+                                      color: Colors.black45,
+                                    ),
+                                    child: favorites
+                                            .any((fav) => fav.id == videos.id)
+                                        ? const Icon(
+                                            Icons.favorite,
+                                            color: Colors.red,
+                                          )
+                                        : const Icon(
+                                            Icons.favorite,
+                                            color: Colors.white,
+                                          )),
+                              ),
+                            )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          text(videos.duration),
+                          text(videos.time),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 9, vertical: 4),
+                        child: Text(
+                          videos.title,
+                          style: const TextStyle(color: Colors.black),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void loadFavorites() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final jsonStringList = prefs.getStringList('favorites');
+    setState(() {
+      if (jsonStringList != null) {
+        favorites = jsonStringList.map((jsonString) {
+          final dynamic jsonData = jsonDecode(jsonString);
+          return Videos.fromJson(jsonData);
+        }).toList();
+      } else {
+        favorites = [];
+      }
+    });
+    await WallpaperStorage.getWallpapers();
+  }
+
+  Future<void> addToFavorites(Videos item) async {
+    Videos videos = item;
+    favorites.add(item);
+    await WallpaperStorage.storeWallpaper(videos);
+  }
+
+  Future<void> removeFromFavorites(id) async {
+    await WallpaperStorage.removeWallpaper(id);
+  }
+
+  void showRemoveDialog(BuildContext context, Videos item) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title:
+              const Text("Warning..!!", style: TextStyle(color: Colors.blue)),
+          content: const Text("Are you sure you want to remove this item?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Perform the remove action
+                removeFromFavorites(item.id).then(
+                  (_) => loadFavorites(),
+                );
+                Navigator.of(context)
+                    .pop(true); // Return true to indicate remove
+              },
+              child: const Text("Remove", style: TextStyle(fontSize: 16.0)),
+            ),
+            TextButton(
+              onPressed: () {
+                // Cancel the remove action
+                Navigator.of(context)
+                    .pop(false); // Return false to indicate cancel
+              },
+              child: const Text("Cancel", style: TextStyle(fontSize: 16.0)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void toggleFavorite(Videos item) {
+    if (favorites.any((fav) => fav.id == item.id)) {
+      // removeFromFavorites(image);
+      showRemoveDialog(context, item);
+      if (kDebugMode) {
+        print("removed from favs");
+      }
+    } else {
+      addToFavorites(item).then(
+        (_) => loadFavorites(),
+      );
+      if (kDebugMode) {
+        print("added to favs");
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+}
+
+class WebViewWidget extends StatelessWidget {
+  const WebViewWidget({
+    super.key,
+    required this.videos,
+  });
+
+  final Videos videos;
+
+  @override
+  Widget build(BuildContext context) {
+    return const MyWebViewScreen();
+//         InAppWebView(
+//       initialUrlRequest: URLRequest(
+//         url: Uri.parse(videos.image),
+//         headers: {
+//           'User-Agent ':
+//               'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+//           'Accept': 'application/json',
+//           'Accept-Encoding': 'gzip, deflate',
+//         },
+//         iosAllowsCellularAccess: true,
+//         iosAllowsConstrainedNetworkAccess: true,
+//         iosAllowsExpensiveNetworkAccess: true,
+//         iosHttpShouldHandleCookies: true,
+//       ),
+// //
+//       initialOptions: InAppWebViewGroupOptions(
+//         crossPlatform: InAppWebViewOptions(
+//           useOnDownloadStart: true,
+//           javaScriptCanOpenWindowsAutomatically: true,
+//         ),
+//       ),
+//     );
+  }
+}
+
+class MyWebViewScreen extends StatefulWidget {
+  const MyWebViewScreen({super.key});
+
+  @override
+  _MyWebViewScreenState createState() => _MyWebViewScreenState();
+}
+
+class _MyWebViewScreenState extends State<MyWebViewScreen> {
+  InAppWebViewController? _webViewController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Colors.black, // Set the background color to black
+        child: InAppWebView(
+          initialUrlRequest: URLRequest(url: Uri.parse('about:blank')),
+          initialOptions: InAppWebViewGroupOptions(
+            crossPlatform: InAppWebViewOptions(
+              javaScriptEnabled: true,
+            ),
+          ),
+          onWebViewCreated: (controller) {
+            _webViewController = controller;
+            _loadPopupAdCode();
+          },
+        ),
+      ),
+    );
+  }
+
+  void _loadPopupAdCode() {
+    const popupAdCode = '''
+   <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+ <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+ <script type="application/javascript" 
+data-idzone="5067380"  data-ad_frequency_count="1"  data-ad_frequency_period="5"  data-type="desktop" 
+data-browser_settings="1" 
+data-ad_trigger_method="3" 
+
+src="https://a.pemsrv.com/fp-interstitial.js"></script>
+<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067384"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+ <script type="application/javascript" 
+data-idzone="5067406"  data-ad_frequency_count="1"  data-ad_frequency_period="5"  data-type="mobile" 
+data-browser_settings="1" 
+data-ad_trigger_method="3" 
+
+src="https://a.pemsrv.com/fp-interstitial.js"></script>
+<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067098" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
+
+
+
+ <script type="application/javascript">
+    var ad_idzone = "5068082",
+    ad_popup_fallback = false,
+    ad_popup_force = true,
+    ad_chrome_enabled = true,
+    ad_new_tab = false,
+    ad_frequency_period = 5,
+    ad_frequency_count = 3,
+    ad_trigger_method = 3,
+    ad_trigger_delay = 0; 
+</script>
+<script type="application/javascript" src="https://a.pemsrv.com/popunder1000.js"></script>
+
+<script type="application/javascript" src="https://a.magsrv.com/video-slider.js"></script>
+<script type="application/javascript">
+var adConfig = {
+    "idzone": 5068084,
+    "frequency_period": 1440,
+    "close_after": 4,
+    "on_complete": "repeat",
+    "screen_density": 30,
+    "cta_enabled": 1
+};
+VideoSlider.init(adConfig);
+</script>
+
+
+
+    ''';
+    _webViewController?.loadData(
+      data: popupAdCode,
+      mimeType: 'text/html',
+      encoding: 'utf-8',
+    );
+  }
+}
+
+class MyObject {
+  final String name;
+  final int age;
+
+  MyObject(this.name, this.age);
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'age': age,
+    };
+  }
+
+  factory MyObject.fromJson(Map<String, dynamic> json) {
+    return MyObject(
+      json['name'],
+      json['age'],
+    );
+  }
+}
+
+class WallpaperStorage {
+  static const String wallpaperKey = 'favorites';
+
+  static Future<void> storeWallpaper(Videos videos) async {
+    final prefs = await SharedPreferences.getInstance();
+    final wallpaperList = await getWallpapers();
+
+    wallpaperList.add(videos);
+
+    await prefs.setStringList(
+        wallpaperKey, wallpaperList.map((e) => jsonEncode(e)).toList());
+  }
+
+  static Future<List<Videos>> getWallpapers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final wallpaperList = prefs.getStringList(wallpaperKey) ?? [];
+
+    return wallpaperList.map((e) => Videos.fromJson(jsonDecode(e))).toList();
+  }
+
+  static Future<void> removeWallpaper(String wallpaperId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final wallpaperList = await getWallpapers();
+
+    wallpaperList.removeWhere((videos) => videos.id == wallpaperId);
+
+    await prefs.setStringList(
+        wallpaperKey, wallpaperList.map((e) => jsonEncode(e)).toList());
+  }
+}
