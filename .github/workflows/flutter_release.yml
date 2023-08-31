@@ -29,8 +29,9 @@ jobs:
 
       - name: Update pubspec.yaml with version
         run: |
-          sed -i.bak "s/version:.*/version: \${{ steps.extract_version.outputs.version }}/" pubspec.yaml
+          sed -i.bak "s/version:.*/version: '${{ steps.extract_version.outputs.version }}'/" pubspec.yaml
         shell: bash
+      
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v1
