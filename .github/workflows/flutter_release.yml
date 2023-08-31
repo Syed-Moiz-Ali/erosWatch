@@ -14,33 +14,24 @@ name: "Build & Release"
 jobs:
   build:
     name: Build & Release
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set tag as environment variable
-        run: echo "TAG=$GITHUB_REF" >> $GITHUB_ENV
-
-      - name: Extract version from tag
-        id: extract_version
-        run: echo "::set-output name=version::$(echo $TAG | sed -n 's/refs\/tags\/v//p')"
-
-      - name: Update pubspec.yaml with version
+      - name: Get Flutter version from pubspec
         run: |
-          sed -i.bak "s/version:.*/version: \${{ steps.extract_version.outputs.version }}/" pubspec.yaml
-        shell: bash
+          set -e
 
-      - name: Setup Java
-        uses: actions/setup-java@v1
-        with:
-          java-version: '12.x'
+          brew install yq
+          _flutterVersion=$( yq read pubspec.yaml environment.flutter )
+          echo "FLUTTER_VERSION=${_flutterVersion}" >> $GITHUB_ENV
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v1
         with:
-          flutter-version: '2.8.0' # Update to your desired Flutter version
+          flutter-version: "v1.0.${{ github.run_number }}"
 
       - name: Flutter pub get
         run: flutter pub get
@@ -53,5 +44,5 @@ jobs:
         with:
           artifacts: "build/app/outputs/apk/release/*"
           prerelease: false
-          tag: "v1.0.${{ steps.extract_version.outputs.version }}" # Use the extracted version
+          tag: "v1.0.${{ github.run_number }}" # Use the extracted version
           token: ${{ secrets.TOKEN }}
