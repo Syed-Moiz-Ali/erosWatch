@@ -171,56 +171,7 @@ class _VideoScreenState extends State<VideoScreen>
         shadowColor: Colors.transparent,
         backgroundColor: Colors.white,
       ),
-      // bottomNavigationBar: BottomNavyBar(
-      //   selectedIndex: pageIndex,
-      //   onItemSelected: (index) {
-      //     setState(() {
-      //       pageIndex = index;
-      //     });
-      //   },
-      //   items: [
-      //     BottomNavyBarItem(
-      //       icon: Icon(
-      //         pageIndex == 0
-      //             ? Icons.new_releases
-      //             : Icons.new_releases_outlined,
-      //         size: 30,
-      //         color: pageIndex == 0 ? Colors.blue : Colors.blue,
-      //       ),
-      //       title: const Text('Home'),
-      //       activeColor: Colors.blue,
-      //     ),
-      //     BottomNavyBarItem(
-      //       icon: Icon(
-      //         pageIndex == 1
-      //             ? Icons.chat_bubble_rounded
-      //             : Icons.chat_bubble_outline_rounded,
-      //         size: 30,
-      //         color: pageIndex == 1 ? Colors.blue : Colors.blue,
-      //       ),
-      //       title: const Text('Channels'),
-      //       activeColor: Colors.blue,
-      //     ),
-      //     BottomNavyBarItem(
-      //       icon: Icon(
-      //         pageIndex == 2 ? Icons.star : Icons.star_outline_outlined,
-      //         size: 30,
-      //         color: pageIndex == 2 ? Colors.blue : Colors.blue,
-      //       ),
-      //       title: const Text('Stars'),
-      //       activeColor: Colors.blue,
-      //     ),
-      //     BottomNavyBarItem(
-      //       icon: Icon(
-      //         pageIndex == 3 ? Icons.favorite : Icons.favorite_outlined,
-      //         size: 30,
-      //         color: pageIndex == 3 ? Colors.blue : Colors.blue,
-      //       ),
-      //       title: const Text('Favorites'),
-      //       activeColor: Colors.blue,
-      //     ),
-      //   ],
-      // ),
+
       body: Align(
         alignment: Alignment.bottomCenter,
         child: Stack(
@@ -490,6 +441,8 @@ String _getAppBarTitle(int currentIndex) {
       return 'Stars';
     case 3:
       return 'Favorites';
+    case 4:
+      return 'Categories';
 
     default:
       return 'Home';

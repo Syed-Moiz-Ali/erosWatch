@@ -25,7 +25,8 @@ class _UpdateScreenState extends State<UpdateScreen> {
   late PackageInfo packageInfo;
   String latestVersion = '1.0.18';
   bool isLoading = true;
-
+  late int appVersionLastInt = 0;
+  late int? githubVersionInt = 0;
   @override
   void initState() {
     super.initState();
@@ -39,18 +40,61 @@ class _UpdateScreenState extends State<UpdateScreen> {
     }
 
     final String version = packageInfo.version;
+    final List<String> versionParts = version.split('.');
+
+    if (versionParts.isNotEmpty) {
+      final String lastPart = versionParts.last;
+
+      try {
+        setState(() {
+          appVersionLastInt = int.parse(lastPart);
+        });
+        if (kDebugMode) {
+          print(appVersionLastInt);
+        }
+      } catch (e) {
+        // Handle any parsing errors here
+        if (kDebugMode) {
+          print('Error parsing last version part: $lastPart');
+        }
+      }
+    }
     const String repositoryUrl =
-        'https://api.github.com/repos/MyCoding331/flutter_eros_watch/releases';
+        'https://api.github.com/repos/MyCoding331/erosWatch/releases';
     final response = await http.get(Uri.parse(repositoryUrl));
     if (response.statusCode == 200) {
       final List<dynamic> releases = json.decode(response.body);
       if (releases.isNotEmpty) {
         final Map<String, dynamic> latestRelease = releases[0];
         final String releaseVersion = latestRelease['tag_name'];
+        final List<String> versionParts =
+            releaseVersion.replaceAll('v', '').split('.');
+        if (versionParts.isNotEmpty) {
+          final String lastVersion = versionParts.last;
+          setState(() {
+            githubVersionInt = int.tryParse(lastVersion);
+          });
+          if (githubVersionInt != null) {
+            if (kDebugMode) {
+              print('GitHub Version (Integer): $githubVersionInt');
+            }
+          } else {
+            // Handle the case where the numeric part couldn't be converted to an int.
+            if (kDebugMode) {
+              print('Invalid GitHub Version: $releaseVersion');
+            }
+          }
+        } else {
+          // Handle the case where there are no version parts.
+          if (kDebugMode) {
+            print('Invalid GitHub Version Format: $releaseVersion');
+          }
+        }
+
         if (kDebugMode) {
           print('Github Version: $releaseVersion');
         }
-        if (version.contains(releaseVersion)) {
+        if (appVersionLastInt < githubVersionInt!) {
           _showUpdateDialog(latestRelease);
         } else {
           setState(() {

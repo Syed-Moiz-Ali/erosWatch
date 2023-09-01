@@ -11,12 +11,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/Stars/star_container_screen.dart';
 import 'package:eroswatch/components/api_service.dart';
 import 'package:eroswatch/helper/videos.dart';
-import 'package:eroswatch/util/utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ChannelCard extends StatefulWidget {
   final List<Channels> content;
+  final String link;
+  final String image;
 
-  const ChannelCard({Key? key, required this.content}) : super(key: key);
+  const ChannelCard({
+    Key? key,
+    required this.content,
+    this.image = 'test',
+    this.link = '',
+  }) : super(key: key);
 
   @override
   _ChannelScreenState createState() => _ChannelScreenState();
@@ -39,6 +46,12 @@ class _ChannelScreenState extends State<ChannelCard> {
   final demoVideo =
       "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4";
 
+  void handleClickButton(String nonLinearClickThroughUrl) {
+    launchUrl(
+      Uri.parse(nonLinearClickThroughUrl.trim()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredContent =
@@ -59,21 +72,15 @@ class _ChannelScreenState extends State<ChannelCard> {
 
         final Channels channel = filteredContent[index];
         final newImage = channel.image;
-        // print(videos.preview);
+        print(newImage);
         bool isPlaying = index == _currentPlayingIndex;
         if (kDebugMode) {
           print(isPlaying);
         }
         return GestureDetector(
           onTap: () {
-            if (changeOnTap) {
-              launchAdsUrl(context, browser).then(
-                (_) => setState(
-                  () {
-                    changeOnTap = false;
-                  },
-                ),
-              );
+            if (!newImage.contains('spankbang')) {
+              handleClickButton(widget.link);
             } else {
               Navigator.push(
                 context,
@@ -122,35 +129,40 @@ class _ChannelScreenState extends State<ChannelCard> {
                       // height: 150,
                       // width: double.infinity,
                       child: ImageComponent(
-                          imagePath: 'https:$newImage', title: "channel"),
+                          imagePath: newImage.contains('spankbang')
+                              ? 'https:$newImage'
+                              : newImage,
+                          title: "channel"),
                     ),
-                    Positioned(
-                      bottom: 20,
-                      right: 20,
-                      child: GestureDetector(
-                        onTap: () {
-                          toggleFavorite(channel);
-                        },
-                        child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50000),
-                              color: Colors.black45,
-                            ),
-                            child: favorites.any((fav) => fav.id == channel.id)
-                                ? const Icon(
-                                    Icons.favorite,
-                                    color: Colors.red,
-                                    size: 15,
-                                  )
-                                : const Icon(
-                                    Icons.favorite,
-                                    color: Colors.white,
-                                    size: 15,
-                                  )),
-                      ),
-                    )
+                    if (newImage.contains('spankbang'))
+                      Positioned(
+                        bottom: 20,
+                        right: 20,
+                        child: GestureDetector(
+                          onTap: () {
+                            toggleFavorite(channel);
+                          },
+                          child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(50000),
+                                color: Colors.black45,
+                              ),
+                              child:
+                                  favorites.any((fav) => fav.id == channel.id)
+                                      ? const Icon(
+                                          Icons.favorite,
+                                          color: Colors.red,
+                                          size: 15,
+                                        )
+                                      : const Icon(
+                                          Icons.favorite,
+                                          color: Colors.white,
+                                          size: 15,
+                                        )),
+                        ),
+                      )
                   ],
                 ),
                 Text(

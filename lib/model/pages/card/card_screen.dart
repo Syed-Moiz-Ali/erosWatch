@@ -39,35 +39,11 @@ class _CardScreenState extends State<CardScreen> {
   void initState() {
     super.initState();
     WallpaperStorage.getWallpapers().then((value) => loadFavorites());
-
-    // _isPlaying = false;
   }
-
-  List<ImageData> imageList = [
-    ImageData(
-      imageUrl:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSsLWVn6ZOrtsgl4lhc4C9DnRGk8ituA04w&usqp=CAU',
-      title: 'Image 2',
-    ),
-  ];
-  Random random = Random();
-  late int randomIndex = random.nextInt(imageList.length);
-
-// Access the randomly selected image and its corresponding URL
-  late ImageData randomImage = imageList[randomIndex];
-  late String demoimageUrl = randomImage.imageUrl;
-  late String demotitle = randomImage.title;
-
-  final demoVideo =
-      "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4";
 
   text(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      // decoration: BoxDecoration(
-      //   color: Colors.black45,
-      //   borderRadius: BorderRadius.circular(3),
-      // ),
       child: Text(
         text,
         style: const TextStyle(fontSize: 11, color: Colors.black),
@@ -75,27 +51,8 @@ class _CardScreenState extends State<CardScreen> {
     );
   }
 
-  // final Uri _url = Uri.parse('https://flutter.dev');
-  // Future<void> _launchUrl() async {
-  //   final Uri url = Uri.parse(
-  //       'https://alterassumeaggravate.com/vxzhm5ur2?key=67878f8f4b7b02dba995a675709106f1');
-  //   setState(() {
-  //     changeOnTap = false;
-  //   });
-  //   // if (!await launchUrl(
-  //   //   url,
-  //   // )) {
-  //   //   throw Exception('Could not launch $url');
-  //   // }
-  //   await browser.open(
-  //     url: url,
-  //     options: ChromeSafariBrowserClassOptions(
-  //         android: AndroidChromeCustomTabsOptions()),
-  //   );
-  // }
-
-  late final String adLink1 = 'https://alterassumeaggravate.com/';
-  late final String adLink2 = 'https://www.liquidfire.mobi/';
+  late final String adLink1 =
+      'https://alterassumeaggravate.com/vxzhm5ur2?key=67878f8f4b7b02dba995a675709106f1';
 
   @override
   Widget build(BuildContext context) {
@@ -116,10 +73,6 @@ class _CardScreenState extends State<CardScreen> {
 
               return GestureDetector(
                 onTap: () {
-                  // videos.image.contains(adLink1) ||
-                  //         videos.image.contains(adLink2)
-                  //     ? launchAdsUrl(context, browser)
-                  //     :
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -127,14 +80,9 @@ class _CardScreenState extends State<CardScreen> {
                           // AdCard()
                           DetailScreen(id: videos.id),
                     ),
-                  ).then((_) {
-                    // Future.delayed(const Duration(seconds: 8), () {
-
-                    // });
-                  });
+                  );
                   loadFavorites();
                 },
-
                 onHorizontalDragStart: (details) {
                   setState(() {
                     _currentPlayingIndex = index;
@@ -143,9 +91,6 @@ class _CardScreenState extends State<CardScreen> {
                 onHorizontalDragEnd: (details) {
                   _currentPlayingIndex = index;
                 },
-                // onLongPress: () {
-                //   toggleFavorite(videos);
-                // },
                 child: SizedBox(
                   width: screenWidth <= 600 ? screenWidth : 250,
                   height: 300,
@@ -161,8 +106,7 @@ class _CardScreenState extends State<CardScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8.0, vertical: 2.0),
                               width: screenWidth <= 600 ? screenWidth : 250,
-                              child: videos.image.contains(adLink1) ||
-                                      videos.image.contains(adLink2)
+                              child: videos.image.contains(adLink1)
                                   ? ClipRRect(
                                       borderRadius: BorderRadius.circular(8.0),
                                       child: WebViewWidget(videos: videos),
@@ -179,8 +123,7 @@ class _CardScreenState extends State<CardScreen> {
                                         ),
                             ),
                           ),
-                          if (!videos.image.contains(adLink1) ||
-                              !videos.image.contains(adLink2))
+                          if (!videos.image.contains(adLink1))
                             Positioned(
                               bottom: 20,
                               right: 20,
@@ -371,10 +314,36 @@ class _MyWebViewScreenState extends State<MyWebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool nextBool = Random().nextBool();
+    String url = 'https://a.magsrv.com/iframe.php?idzone=5068348&size=300x250';
     return Scaffold(
       body: Container(
         color: Colors.black, // Set the background color to black
-        child: InAppWebView(
+        child:
+            // nextBool
+            //     ? InAppWebView(
+            //         initialUrlRequest: URLRequest(url: Uri.parse(url)),
+            //         initialOptions: InAppWebViewGroupOptions(
+            //           crossPlatform: InAppWebViewOptions(
+            //             javaScriptEnabled: true,
+            //           ),
+            //         ),
+            //         onLoadStop: (controller, url) {
+            //           // Inject JavaScript to adjust the WebView size
+            //           const script = '''
+            //     var viewport = document.querySelector("meta[name=viewport]");
+            //     if (!viewport) {
+            //       viewport = document.createElement('meta');
+            //       viewport.name = "viewport";
+            //       document.head.appendChild(viewport);
+            //     }
+            //       viewport.content = "width=device-width, initial-scale=1.0";
+            //   ''';
+            //           controller.evaluateJavascript(source: script);
+            //         },
+            //       )
+            //     :
+            InAppWebView(
           initialUrlRequest: URLRequest(url: Uri.parse('about:blank')),
           initialOptions: InAppWebViewGroupOptions(
             crossPlatform: InAppWebViewOptions(
@@ -391,49 +360,9 @@ class _MyWebViewScreenState extends State<MyWebViewScreen> {
   }
 
   void _loadPopupAdCode() {
-    const popupAdCode = '''
-   <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
- <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
- <script type="application/javascript" 
-data-idzone="5067380"  data-ad_frequency_count="1"  data-ad_frequency_period="5"  data-type="desktop" 
-data-browser_settings="1" 
-data-ad_trigger_method="3" 
+    const popupAdCode1 = '''
 
-src="https://a.pemsrv.com/fp-interstitial.js"></script>
-<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067384"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
- <script type="application/javascript" 
-data-idzone="5067406"  data-ad_frequency_count="1"  data-ad_frequency_period="5"  data-type="mobile" 
-data-browser_settings="1" 
-data-ad_trigger_method="3" 
-
-src="https://a.pemsrv.com/fp-interstitial.js"></script>
-<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067098" data-keywords="keywords" data-sub="123450000"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
-
-
-
-
- <script type="application/javascript">
-    var ad_idzone = "5068082",
-    ad_popup_fallback = false,
-    ad_popup_force = true,
-    ad_chrome_enabled = true,
-    ad_new_tab = false,
-    ad_frequency_period = 5,
-    ad_frequency_count = 3,
-    ad_trigger_method = 3,
-    ad_trigger_delay = 0; 
-</script>
-<script type="application/javascript" src="https://a.pemsrv.com/popunder1000.js"></script>
-
-<script type="application/javascript" src="https://a.magsrv.com/video-slider.js"></script>
+  <script type="application/javascript" src="https://a.magsrv.com/video-slider.js"></script>
 <script type="application/javascript">
 var adConfig = {
     "idzone": 5068084,
@@ -445,12 +374,84 @@ var adConfig = {
 };
 VideoSlider.init(adConfig);
 </script>
-
-
+<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+ <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
 
     ''';
+    const popupAdCode2 = '''
+  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067098" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+ <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+    ''';
+    const popupAdCode3 = '''
+  
+<script type="application/javascript" 
+data-idzone="5067406"  data-ad_frequency_count="30"  data-ad_frequency_period="5"  data-type="mobile" 
+data-browser_settings="1" 
+data-ad_trigger_method="3" 
+
+src="https://a.pemsrv.com/fp-interstitial.js"></script>
+<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+ <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+    ''';
+    const popupAdCode4 = '''
+  
+<script type="application/javascript">
+    var ad_idzone = "5068082",
+    ad_popup_fallback = false,
+    ad_popup_force = true,
+    ad_chrome_enabled = true,
+    ad_new_tab = false,
+    ad_frequency_period = 5,
+    ad_frequency_count = 3,
+    ad_trigger_method = 3,
+    ad_trigger_delay = 0; 
+</script>
+<script type="application/javascript" src="https://a.pemsrv.com/popunder1000.js"></script>
+<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+ <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
+ <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+    ''';
+
+    final int randomIndex = Random().nextInt(5);
+    String selectedPopupAdCode;
+
+    switch (randomIndex) {
+      case 0:
+        selectedPopupAdCode = popupAdCode1;
+        break;
+      case 1:
+        selectedPopupAdCode = popupAdCode2;
+        break;
+      case 3:
+        selectedPopupAdCode = popupAdCode3;
+        break;
+      case 4:
+        selectedPopupAdCode = popupAdCode4;
+        break;
+      default:
+        selectedPopupAdCode = popupAdCode1;
+        break;
+    }
     _webViewController?.loadData(
-      data: popupAdCode,
+      data: selectedPopupAdCode,
       mimeType: 'text/html',
       encoding: 'utf-8',
     );

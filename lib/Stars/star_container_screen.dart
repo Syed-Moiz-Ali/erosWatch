@@ -43,8 +43,8 @@ class _ContainerState extends State<StarContainer> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(
-          color: Colors.black,
-          size: 30, // Set the color of the back button
+          color: Colors.blue,
+          // size: 30, // Set the color of the back button
         ),
         shadowColor: Colors.transparent,
         title: Padding(

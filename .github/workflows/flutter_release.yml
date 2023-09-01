@@ -29,7 +29,7 @@ jobs:
 
       - name: Update pubspec.yaml with version
         run: |
-          sed -i.bak "s/version:.*/version: '1.0.1'/" pubspec.yaml
+          sed -i.bak "s/version:.*/version: '1.0.2'/" pubspec.yaml
         shell: bash
       
 
@@ -49,5 +49,5 @@ jobs:
         with:
           artifacts: "build/app/outputs/apk/release/*"
           prerelease: false
-          tag: "v1.0.1" # Use the extracted version
+          tag: "v1.0.2" # Use the extracted version
           token: ${{ secrets.TOKEN }}

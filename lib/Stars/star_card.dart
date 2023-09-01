@@ -9,13 +9,20 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:eroswatch/Stars/star_container_screen.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:eroswatch/util/utils.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../components/api_service.dart';
 
 class StarCard extends StatefulWidget {
   final List<Stars> content;
-
-  const StarCard({Key? key, required this.content}) : super(key: key);
+  final String link;
+  final String image;
+  const StarCard({
+    Key? key,
+    required this.content,
+    this.image = 'test',
+    this.link = '',
+  }) : super(key: key);
 
   @override
   _CardScreenState createState() => _CardScreenState();
@@ -54,6 +61,12 @@ class _CardScreenState extends State<StarCard> {
   final demoVideo =
       "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4";
 
+  void handleClickButton(String nonLinearClickThroughUrl) {
+    launchUrl(
+      Uri.parse(nonLinearClickThroughUrl.trim()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredContent = widget.content
@@ -79,14 +92,8 @@ class _CardScreenState extends State<StarCard> {
 
         return GestureDetector(
           onTap: () {
-            if (changeOnTap) {
-              launchAdsUrl(context, browser).then(
-                (_) => setState(
-                  () {
-                    changeOnTap = false;
-                  },
-                ),
-              );
+            if (newImage.contains('spankbang')) {
+              handleClickButton(widget.link);
             } else {
               Navigator.push(
                 context,
@@ -135,33 +142,37 @@ class _CardScreenState extends State<StarCard> {
                       // height: 150,
                       // width: double.infinity,
                       child: ImageComponent(
-                          imagePath: 'https:$newImage', title: "star"),
+                          imagePath: newImage.contains('spankbang')
+                              ? 'https:$newImage'
+                              : newImage,
+                          title: "star"),
                     ),
-                    Positioned(
-                      bottom: 20,
-                      right: 20,
-                      child: GestureDetector(
-                        onTap: () {
-                          toggleFavorite(stars);
-                        },
-                        child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50000),
-                              color: Colors.black45,
-                            ),
-                            child: favorites.any((fav) => fav.id == stars.id)
-                                ? const Icon(
-                                    Icons.favorite,
-                                    color: Colors.red,
-                                  )
-                                : const Icon(
-                                    Icons.favorite,
-                                    color: Colors.white,
-                                  )),
-                      ),
-                    )
+                    if (newImage.contains('spankbang'))
+                      Positioned(
+                        bottom: 20,
+                        right: 20,
+                        child: GestureDetector(
+                          onTap: () {
+                            toggleFavorite(stars);
+                          },
+                          child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(50000),
+                                color: Colors.black45,
+                              ),
+                              child: favorites.any((fav) => fav.id == stars.id)
+                                  ? const Icon(
+                                      Icons.favorite,
+                                      color: Colors.red,
+                                    )
+                                  : const Icon(
+                                      Icons.favorite,
+                                      color: Colors.white,
+                                    )),
+                        ),
+                      )
                   ],
                 ),
                 Text(

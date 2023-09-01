@@ -3,14 +3,13 @@
 import 'dart:async';
 
 import 'dart:math';
-import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:eroswatch/Watch/smiliar.dart';
-
 import 'package:eroswatch/video_player/video_player_controls.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:http/http.dart' as http;
@@ -47,10 +46,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   String gifUrl = '';
   String nonLinearClickThroughUrl = '';
   bool showAd = true;
-  // double _swipeStartY = 0.0;
-  // bool _isSwipingUp = false;
-  // double _swipeStartX = 0.0;
-  // bool _isSwipingHorizontal = false;
+  bool showForward = false;
+  bool showBackward = false;
 
   List<double> widthFactorValues = [
     1.0,
@@ -70,10 +67,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   double currentVolume = 0;
   bool isSliderVisible = false; // Initial visibility state
   Timer? _sliderTimer; // Timer to hide the slider after a delay
-  // double _volumeListenerValue = 0;
-  // double _initialBrightnessDrag = 0.0; // Initial position of vertical drag
-  // double _initialBrightness = 0.0; // Initial brightness value
-  // double _slidingBrightness = 0.0; // Tracking brightness while sliding
 
   @override
   void initState() {
@@ -95,14 +88,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
 
     VolumeController().getVolume().then((volume) => currentVolume = volume);
-
-    // _sliderTimer = Timer(Duration(seconds: 2), () {
-    //   setState(() {
-    //     isSliderVisible = false;
-    //   });
-    // });
-    // isSliderVisible = false;
-    // _enterFullscreen();
   }
 
   Future<void> fetchAndParseVastXml() async {
@@ -132,7 +117,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
         setState(() {
           gifUrl = gifElement.innerText;
-          nonLinearClickThroughUrl = nonLinearElement.innerText;
+          nonLinearClickThroughUrl = nonLinearElement.innerText.trim();
         });
 
         if (kDebugMode) {
@@ -165,14 +150,18 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       });
     });
     double deltaY = details.localPosition.dy - _initialVolumeDrag;
-    double maxDeltaY = 500.0; // Adjust this value based on desired sensitivity
+    double maxDeltaY =
+        3000.0; // Adjust this value based on desired sensitivity (higher value for less sensitivity)
 
     // Limit deltaY to a maximum value to control sensitivity
     deltaY = deltaY.clamp(-maxDeltaY, maxDeltaY);
 
-    double deltaVolume = deltaY / maxDeltaY;
+    double volumeIncrement =
+        -0.7; // Adjust this value for smoother adjustment (smaller value for smoother)
 
-    double newVolume = _initialVolume - deltaVolume;
+    double deltaVolume = deltaY / maxDeltaY * volumeIncrement;
+
+    double newVolume = _initialVolume + deltaVolume;
     newVolume = newVolume.clamp(0, 1); // Clamp volume between 0 and 1
 
     setState(() {
@@ -180,43 +169,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       VolumeController().setVolume(currentVolume);
     });
   }
-
-// void _updateVolume(double newValue) {
-//   setState(() {
-//     currentVolume = newValue;
-//     VolumeController().setVolume(currentVolume);
-//   });
-// }
-
-//   Future<void> _setBrightness(double brightness) async {
-//     try {
-//       await ScreenBrightness().setScreenBrightness(brightness);
-//     } catch (e) {
-//       print("Error setting brightness: $e");
-//     }
-//   }
-
-  // Future<void> _onVerticalBrightnessDragStart(DragStartDetails details) async {
-  //   _initialBrightnessDrag = details.localPosition.dy;
-  //   _initialBrightness = ScreenBrightness().current as double;
-  //   _slidingBrightness =
-  //       _initialBrightness; // Initialize with current brightness
-  // }
-
-  // void _onVerticalBrightnessDragUpdate(DragUpdateDetails details) {
-  //   double deltaY = details.localPosition.dy - _initialBrightnessDrag;
-  //   double deltaBrightness =
-  //       deltaY / 200.0; // Adjust this value for sensitivity
-
-  //   double newBrightness = _initialBrightness - deltaBrightness;
-  //   newBrightness =
-  //       newBrightness.clamp(0.0, 1.0); // Clamp brightness between 0 and 1
-
-  //   setState(() {
-  //     _slidingBrightness = newBrightness; // Update sliding brightness
-  //     _setBrightness(newBrightness);
-  //   });
-  // }
 
   void _togglePlayPause() {
     setState(() {
@@ -355,172 +307,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
   }
 
-  // void _onVerticalSwipeStart(DragStartDetails details) {
-  //   _swipeStartY = details.globalPosition.dy;
-  // }
-
-  // void _onVerticalUpdate(DragUpdateDetails details) {
-  //   if (_isSwipingUp) {
-  //     final currentY = details.globalPosition.dy;
-  //     final deltaY = _swipeStartY - currentY;
-
-  //     if (deltaY < -50) {
-  //       // Threshold to consider as swiping down
-  //       setState(() {
-  //         _isSwipingUp = false;
-  //       });
-  //     }
-  //   } else {
-  //     final currentY = details.globalPosition.dy;
-  //     final deltaY = _swipeStartY - currentY;
-
-  //     if (deltaY > 50) {
-  //       // Threshold to consider as swiping up
-  //       setState(() {
-  //         _isSwipingUp = true;
-  //       });
-  //     }
-  //   }
-  // }
-
-  // void _onVerticalEnd(DragEndDetails details) {
-  //   _swipeStartY = 0.0;
-  //   _isSwipingUp = false;
-  // }
-
-  // void _onHorizontalSwipeStart(DragStartDetails details) {
-  //   _swipeStartX = details.globalPosition.dx;
-  //   _isSwipingHorizontal = true;
-  //   final screenWidth = MediaQuery.of(context).size.width;
-  //   final tapPositionX = details.localPosition.dx;
-  //   final middleX = screenWidth / 2;
-
-  //   if (tapPositionX > middleX) {
-  //     _seekDirection = SeekDirection.backward;
-  //   } else {
-  //     _seekDirection = SeekDirection.forward;
-  //   }
-  // }
-
-  // void _onHorizontalUpdate(DragUpdateDetails details) {
-  //   if (_isSwipingHorizontal) {
-  //     final currentX = details.globalPosition.dx;
-  //     final deltaX = currentX - _swipeStartX;
-  //     final double screenWidth = MediaQuery.of(context).size.width;
-
-  //     // Calculate the seek amount based on the screen width
-  //     final seekAmount = deltaX / screenWidth;
-
-  //     // Define the scaling factor for seek duration
-  //     const double seekFactor =
-  //         0.09; // Adjust this value as per your preference
-
-  //     // Calculate the final seek duration with scaling
-  //     final scaledSeekAmount = seekAmount * seekFactor;
-
-  //     // Seek forward or backward based on the swipe direction
-  //     if (seekAmount > 0) {
-  //       _seekForwardDrag(scaledSeekAmount);
-  //     } else {
-  //       _seekBackwardDrag(-scaledSeekAmount);
-  //     }
-  //   }
-  // }
-
-  // void _onHorizontalEnd(DragEndDetails details) {
-  //   _swipeStartX = 0.0;
-  //   _isSwipingHorizontal = false;
-  // }
-
-  // void _seekForwardDrag(double seekAmount) {
-  //   final newPosition = Duration(
-  //     milliseconds: (_videoPlayerController.value.position.inMilliseconds +
-  //             (seekAmount *
-  //                 _videoPlayerController.value.duration.inMilliseconds))
-  //         .toInt(),
-  //   );
-
-  //   AnimationController controller = AnimationController(
-  //     duration: const Duration(milliseconds: 300),
-  //     vsync: this,
-  //   );
-  //   Animation<double> positionAnimation = Tween<double>(
-  //     begin: _videoPlayerController.value.position.inMilliseconds.toDouble(),
-  //     end: newPosition.inMilliseconds.toDouble(),
-  //   ).animate(controller);
-
-  //   // Start the animation
-  //   controller.forward();
-
-  //   // Update the video player's position when the animation changes
-  //   controller.addListener(() {
-  //     Duration newDuration = Duration(
-  //       milliseconds: positionAnimation.value.toInt(),
-  //     );
-  //     _videoPlayerController.seekTo(newDuration);
-  //   });
-
-  //   // Clean up resources when the animation is done
-  //   controller.addStatusListener((status) {
-  //     if (status == AnimationStatus.completed) {
-  //       controller.dispose();
-  //     }
-  //   });
-  // }
-
-  // void _seekBackwardDrag(double seekAmount) {
-  //   final newPosition = Duration(
-  //     milliseconds: (_videoPlayerController.value.position.inMilliseconds -
-  //             (seekAmount *
-  //                 _videoPlayerController.value.duration.inMilliseconds))
-  //         .toInt(),
-  //   );
-  //   AnimationController controller = AnimationController(
-  //     duration: const Duration(milliseconds: 300),
-  //     vsync: this,
-  //   );
-  //   Animation<double> positionAnimation = Tween<double>(
-  //     begin: _videoPlayerController.value.position.inMilliseconds.toDouble(),
-  //     end: newPosition.inMilliseconds.toDouble(),
-  //   ).animate(controller);
-
-  //   // Start the animation
-  //   controller.forward();
-
-  //   // Update the video player's position when the animation changes
-  //   controller.addListener(() {
-  //     Duration newDuration = Duration(
-  //       milliseconds: positionAnimation.value.toInt(),
-  //     );
-  //     _videoPlayerController.seekTo(newDuration);
-  //   });
-
-  //   // Clean up resources when the animation is done
-  //   controller.addStatusListener((status) {
-  //     if (status == AnimationStatus.completed) {
-  //       controller.dispose();
-  //     }
-  //   });
-  // }
-
-  // void _seekByDoubleTap() {
-  //   const seekDuration = 10; // Seek duration in seconds
-  //   final seekDirection = _seekDirection == SeekDirection.backward ? 1 : -1;
-  //   final newPosition = _videoPlayerController.value.position +
-  //       Duration(seconds: seekDuration * seekDirection);
-  //   final seekPosition = newPosition.inSeconds
-  //       .clamp(0, _videoPlayerController.value.duration.inSeconds);
-
-  //   _videoPlayerController.seekTo(Duration(seconds: seekPosition));
-  // }
-
-  // void _clearSeekDirection() {
-  //   setState(() {
-  //     _seekDirection = SeekDirection.none;
-  //   });
-  // }
-
-  // Method to handle the button click and change the factor value
   void _onButtonClick() {
     setState(() {
       currentWidthFactorIndex =
@@ -535,33 +321,55 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       angle: -90 * (pi / 180),
       child: Opacity(
         opacity: 0.8,
-        child: SliderTheme(
-          data: SliderThemeData(
-            activeTrackColor: Colors.blue,
-            inactiveTrackColor: Colors.grey,
-            overlayColor: Colors.blue.withOpacity(0.3),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 5.0),
-            thumbShape: const RoundSliderThumbShape(
-              enabledThumbRadius: 5.0,
-              disabledThumbRadius: 5.0,
+        child:
+            // SliderTheme(
+            //   data: SliderThemeData(
+            //     activeTrackColor: Colors.blue,
+            //     inactiveTrackColor: Colors.grey,
+            //     overlayColor: Colors.blue.withOpacity(0.3),
+            //     overlayShape: const RoundSliderOverlayShape(overlayRadius: 5.0),
+            //     thumbShape: const RoundSliderThumbShape(
+            //       enabledThumbRadius: 5.0,
+            //       disabledThumbRadius: 5.0,
+            //     ),
+            //     trackShape: const RoundedRectSliderTrackShape(),
+            //     rangeTrackShape: const RoundedRectRangeSliderTrackShape(),
+            //     valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
+            //     trackHeight: 6.0,
+            //   ),
+            //   child: Slider(
+            //     onChanged: (double value) {
+            //       setState(() {
+            //         currentVolume = value;
+            //         VolumeController().setVolume(currentVolume);
+            //       });
+            //     },
+            //     value: currentVolume,
+            //     min: 0,
+            //     max: 1,
+            //   ),
+            // ),
+            Center(
+          child: SizedBox(
+            width: 160,
+            height: 5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(2000),
+              child: LinearProgressIndicator(
+                value: currentVolume,
+                minHeight: 45.0,
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                backgroundColor: Colors.grey, // Set the background color
+              ),
             ),
-            trackShape: const RoundedRectSliderTrackShape(),
-            rangeTrackShape: const RoundedRectRangeSliderTrackShape(),
-            valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
-            trackHeight: 6.0,
-          ),
-          child: Slider(
-            onChanged: (double value) {
-              setState(() {
-                currentVolume = value;
-                VolumeController().setVolume(currentVolume);
-              });
-            },
-            value: currentVolume,
-            min: 0,
-            max: 1,
           ),
         ),
+        //     Center(
+        //   child: Container(
+        //       width: 50,
+        //       height: 50,
+        //       child: CircularProgressIndicator(value: currentVolume)),
+        // ),
       ),
     );
   }
@@ -591,23 +399,28 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
   }
 
+  void handleClickButton(String nonLinearClickThroughUrl) {
+    launchUrl(
+      Uri.parse(nonLinearClickThroughUrl.trim()),
+    );
+    setState(() {
+      showAd = false; // Set showAd to false when the button is clicked
+    });
+
+    // Start a timer to reset showAd to true after 5 minutes
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight =
         _isFullscreen == true ? MediaQuery.of(context).size.height : 300;
+
     return WillPopScope(
       onWillPop: _exitFullscreen,
       child: Column(
         children: [
           GestureDetector(
-            // onVerticalDragStart: _onVerticalSwipeStart,
-            // onVerticalDragUpdate: _onVerticalUpdate,
-            // onVerticalDragEnd: _onVerticalEnd,
-            // onHorizontalDragStart: _onHorizontalSwipeStart,
-            // onHorizontalDragUpdate: _onHorizontalUpdate,
-            // onHorizontalDragEnd: _onHorizontalEnd,
-            // onDoubleTap: _seekByDoubleTap,
             onTap: _toggleControlsVisibility,
             child: Container(
               color: Colors.black,
@@ -653,7 +466,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                       },
                     ),
                   ),
-
                   if (_showControls)
                     AnimatedOpacity(
                       opacity: _showControls ? 1.0 : 0.0,
@@ -699,62 +511,102 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                         ),
                       ),
                     ),
+                  if (showBackward)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        height: screenHeight,
+                        width: screenWidth / 2 - 30,
+                        // color: Colors.black45,
+                        child: const Center(
+                          child: Icon(
+                            Icons.replay_10_rounded,
+                            size: 70,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (showForward)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 500),
+                        height: screenHeight,
+                        width: screenWidth / 2 - 30,
+                        // color: Colors.black45,
+                        child: const Center(
+                          child: Icon(
+                            Icons.forward_10_rounded,
+                            size: 70,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                   Positioned(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Stack(
-                          children: [
-                            SizedBox(
-                              height: screenHeight,
-                              width: screenWidth / 2 - 30,
-                              child: GestureDetector(
-                                // onVerticalDragStart:
-                                //     _onVerticalBrightnessDragStart,
-                                // onVerticalDragUpdate:
-                                //     _onVerticalBrightnessDragUpdate,
-                                // onVerticalDragEnd: (_) {
-                                //   setState(() {
-                                //     _slidingBrightness =
-                                //         _initialBrightness; // Reset sliding brightness
-                                //   });
-                                // },
-                                onDoubleTap: () {
-                                  _seekBackward(10);
-                                },
-                              ),
-                            ),
-                            Visibility(
-                              visible: isSliderVisible,
-                              child: slider(currentVolume),
-                            ),
-                          ],
-                        ),
                         SizedBox(
-                          height: screenHeight,
+                          height: screenHeight - 85,
                           width: screenWidth / 2 - 30,
                           child: GestureDetector(
-                            onVerticalDragStart: _onVerticalVolumeDragStart,
-                            onVerticalDragUpdate: _onVerticalVolumeDragUpdate,
                             onDoubleTap: () {
-                              _seekForward(10);
+                              _seekBackward(
+                                  10); // Implement this function to handle rewind
+                              setState(() {
+                                showBackward = true;
+                              });
+
+                              Future.delayed(
+                                const Duration(milliseconds: 500),
+                                () {
+                                  setState(() {
+                                    showBackward = false;
+                                    print("showBackward: $showBackward");
+                                  });
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          height: screenHeight - 85,
+                          width: screenWidth / 2 - 30,
+                          child: GestureDetector(
+                            onDoubleTap: () {
+                              _seekForward(
+                                  10); // Implement this function to handle rewind
+                              setState(() {
+                                showForward = true;
+                              });
+
+                              Future.delayed(
+                                const Duration(milliseconds: 500),
+                                () {
+                                  setState(() {
+                                    showForward = false;
+                                    print("showForward: $showForward");
+                                  });
+                                },
+                              );
                             },
                           ),
                         ),
                       ],
                     ),
                   ),
-                  // DoubleTap(
-                  //   videoPlayerController: _videoPlayerController,
-                  // ),
                   if (showAd && gifUrl != '')
                     Center(
                       child: Stack(
                         children: [
                           GestureDetector(
                             onTap: () {
-                              inVideoAddLaunch(
-                                  context, browser, nonLinearClickThroughUrl);
+                              handleClickButton(nonLinearClickThroughUrl);
                             },
                             child: Container(
                               width: screenWidth / 2.1,
@@ -768,31 +620,31 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                               ),
                             ),
                           ),
-                          Positioned(
-                            top: 5,
-                            right: 5,
-                            child: Container(
-                              color: Colors.black54,
-                              width: 30,
-                              height: 30,
-                              child: Align(
-                                alignment:
-                                    Alignment.center, // Center the IconButton
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.close,
-                                    size: 18,
-                                    color: Colors.white,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      showAd = false;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          )
+                          // Positioned(
+                          //   top: 5,
+                          //   right: 5,
+                          //   child: Container(
+                          //     color: Colors.black54,
+                          //     width: 30,
+                          //     height: 30,
+                          //     child: Align(
+                          //       alignment:
+                          //           Alignment.center, // Center the IconButton
+                          //       child: IconButton(
+                          //         icon: const Icon(
+                          //           Icons.close,
+                          //           size: 18,
+                          //           color: Colors.white,
+                          //         ),
+                          //         onPressed: () {
+                          //           setState(() {
+                          //             showAd = false;
+                          //           });
+                          //         },
+                          //       ),
+                          //     ),
+                          //   ),
+                          // )
                         ],
                       ),
                     )

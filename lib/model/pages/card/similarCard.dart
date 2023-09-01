@@ -32,28 +32,9 @@ class _CardScreenState extends State<SimilarCard> {
   @override
   void initState() {
     super.initState();
-    loadFavorites();
-    // _isPlaying = false;
+
+    WallpaperStorage.getWallpapers().then((value) => loadFavorites());
   }
-
-  List<ImageData> imageList = [
-    ImageData(
-      imageUrl:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSsLWVn6ZOrtsgl4lhc4C9DnRGk8ituA04w&usqp=CAU',
-      title: 'Image 2',
-    ),
-  ];
-  Random random = Random();
-  late int randomIndex = random.nextInt(imageList.length);
-
-// Access the randomly selected image and its corresponding URL
-  late ImageData randomImage = imageList[randomIndex];
-  late String demoimageUrl = randomImage.imageUrl;
-  late String demotitle = randomImage.title;
-  final demoImage =
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSsLWVn6ZOrtsgl4lhc4C9DnRGk8ituA04w&usqp=CAU";
-  final demoVideo =
-      "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4";
 
   text(String text) {
     return Container(
@@ -129,13 +110,6 @@ class _CardScreenState extends State<SimilarCard> {
             });
           },
           onLongPress: () {
-            // setState(() {
-            //   if (_currentPlayingIndex == index) {
-            //     _currentPlayingIndex = -1;
-            //   } else {
-            //     _currentPlayingIndex = index;
-            //   }
-            // });
             toggleFavorite(videos);
           },
           child: ClipRRect(
@@ -156,11 +130,14 @@ class _CardScreenState extends State<SimilarCard> {
                           : ImageComponent(
                               imagePath: newImage, title: videos.title),
                     ),
-                    if (favorites.contains(videos))
+                    if (favorites.any((fav) => fav.id == videos.id))
                       Container(
                         width: double.infinity,
                         height: 150,
-                        color: Colors.black54,
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                         padding: const EdgeInsets.all(16.0),
                         child: const Text(
                           "Library",
@@ -202,40 +179,31 @@ class _CardScreenState extends State<SimilarCard> {
 
   void loadFavorites() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    final jsonStringList = prefs.getStringList('favorites');
     setState(() {
-      final jsonString = prefs.getString('favorites');
-      if (jsonString != null) {
-        final List<dynamic> jsonList = jsonDecode(jsonString);
-        favorites = jsonList.map((item) => Videos.fromJson(item)).toList();
+      if (jsonStringList != null) {
+        favorites = jsonStringList.map((jsonString) {
+          final dynamic jsonData = jsonDecode(jsonString);
+          return Videos.fromJson(jsonData);
+        }).toList();
       } else {
         favorites = [];
       }
     });
+    await WallpaperStorage.getWallpapers();
   }
 
-  void addToFavorites(Videos item) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      favorites.add(item);
-      final List<dynamic> jsonList =
-          favorites.map((item) => item.toJson()).toList();
-      final jsonString = jsonEncode(jsonList);
-      prefs.setString('favorites', jsonString);
-    });
+  Future<void> addToFavorites(Videos item) async {
+    Videos videos = item;
+    favorites.add(item);
+    await WallpaperStorage.storeWallpaper(videos);
   }
 
-  void removeFromFavorites(item) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      favorites.remove(item);
-      final List<dynamic> jsonList =
-          favorites.map((item) => item.toJson()).toList();
-      final jsonString = jsonEncode(jsonList);
-      prefs.setString('favorites', jsonString);
-    });
+  Future<void> removeFromFavorites(id) async {
+    await WallpaperStorage.removeWallpaper(id);
   }
 
-  void showRemoveDialog(BuildContext context, String image) {
+  void showRemoveDialog(BuildContext context, Videos item) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -250,7 +218,9 @@ class _CardScreenState extends State<SimilarCard> {
             TextButton(
               onPressed: () {
                 // Perform the remove action
-                removeFromFavorites(image);
+                removeFromFavorites(item.id).then(
+                  (_) => loadFavorites(),
+                );
                 Navigator.of(context)
                     .pop(true); // Return true to indicate remove
               },
@@ -270,15 +240,17 @@ class _CardScreenState extends State<SimilarCard> {
     );
   }
 
-  void toggleFavorite(image) {
-    if (favorites.contains(image)) {
+  void toggleFavorite(Videos item) {
+    if (favorites.any((fav) => fav.id == item.id)) {
       // removeFromFavorites(image);
-      showRemoveDialog(context, image);
+      showRemoveDialog(context, item);
       if (kDebugMode) {
         print("removed from favs");
       }
     } else {
-      addToFavorites(image);
+      addToFavorites(item).then(
+        (_) => loadFavorites(),
+      );
       if (kDebugMode) {
         print("added to favs");
       }
@@ -309,5 +281,36 @@ class MyObject {
       json['name'],
       json['age'],
     );
+  }
+}
+
+class WallpaperStorage {
+  static const String wallpaperKey = 'favorites';
+
+  static Future<void> storeWallpaper(Videos videos) async {
+    final prefs = await SharedPreferences.getInstance();
+    final wallpaperList = await getWallpapers();
+
+    wallpaperList.add(videos);
+
+    await prefs.setStringList(
+        wallpaperKey, wallpaperList.map((e) => jsonEncode(e)).toList());
+  }
+
+  static Future<List<Videos>> getWallpapers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final wallpaperList = prefs.getStringList(wallpaperKey) ?? [];
+
+    return wallpaperList.map((e) => Videos.fromJson(jsonDecode(e))).toList();
+  }
+
+  static Future<void> removeWallpaper(String wallpaperId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final wallpaperList = await getWallpapers();
+
+    wallpaperList.removeWhere((videos) => videos.id == wallpaperId);
+
+    await prefs.setStringList(
+        wallpaperKey, wallpaperList.map((e) => jsonEncode(e)).toList());
   }
 }

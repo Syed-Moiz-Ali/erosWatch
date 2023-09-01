@@ -1,11 +1,15 @@
 // ignore_for_file: must_be_immutable
 
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:eroswatch/components/api_service.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:eroswatch/model/Channels/channels_card.dart';
+import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart';
 
 class ChannelScreen extends StatefulWidget {
   String param;
@@ -20,14 +24,16 @@ class _ChannelScreenState extends State<ChannelScreen> {
   List<Channels> channels = [];
   bool isLoading = false;
   int pageNumber = 1;
-  late Future<List<Channels>> futureStars;
-  List<Channels> favoriteWallpapers = [];
+  String gifUrl = '';
+  String nonLinearClickThroughUrl = '';
+  late Future<List<Channels>> futureChannels;
+
   @override
-  void initState() {
+  initState() {
     super.initState();
     apiService = APIChannels(params: "channels", type: widget.param);
-    futureStars = apiService.fetchWallpapers(1);
-    fetchStars();
+    futureChannels = apiService.fetchWallpapers(1);
+    fetchAndParseVastXml().then((_) => fetchChannels());
   }
 
   @override
@@ -35,18 +41,19 @@ class _ChannelScreenState extends State<ChannelScreen> {
     super.dispose();
   }
 
-  Future<void> fetchStars() async {
+  Future<void> fetchChannels() async {
     if (isLoading) return;
     setState(() {
       isLoading = true;
     });
 
     try {
-      final List<Channels> newStars =
+      final List<Channels> newChannels =
           await apiService.fetchWallpapers(pageNumber);
+      insertRandomAds(newChannels);
 
       setState(() {
-        channels.addAll(newStars);
+        channels.addAll(newChannels);
         pageNumber++;
         isLoading = false;
       });
@@ -60,10 +67,73 @@ class _ChannelScreenState extends State<ChannelScreen> {
     }
   }
 
+  Future<void> fetchAndParseVastXml() async {
+    try {
+      final response = await http
+          .get(Uri.parse('https://s.magsrv.com/splash.php?idzone=5067482'));
+      if (response.statusCode == 200) {
+        final xmlString = response.body;
+        final document = XmlDocument.parse(xmlString);
+
+        final gifElement =
+            document.findAllElements('StaticResource').firstWhere(
+                  (element) =>
+                      element.getAttribute('creativeType') == 'image/gif',
+                );
+
+        final nonLinearElement = document
+            .findAllElements('NonLinear')
+            .firstWhere(
+              (element) =>
+                  element.findAllElements('NonLinearClickThrough').isNotEmpty,
+            );
+        // nonLinearClickThroughUrl = nonLinearElement
+        //     .findAllElements('NonLinearClickThrough')
+        //     .first
+        //     .innerText;
+
+        setState(() {
+          gifUrl = gifElement.innerText.trim();
+          nonLinearClickThroughUrl = nonLinearElement.innerText.trim();
+        });
+
+        if (kDebugMode) {
+          print('gifUrl; $gifUrl');
+        }
+        if (kDebugMode) {
+          print('nonLinearClickThroughUrl; $nonLinearClickThroughUrl');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching and parsing VAST XML: $e');
+      }
+    }
+  }
+
+  void insertRandomAds(List<Channels> wallpapers) {
+    const int numAdsToInsert = 6; // You can adjust this as needed
+
+    for (int i = 0; i < numAdsToInsert; i++) {
+      final int randomIndex = Random()
+          .nextInt(wallpapers.length + 1); // +1 to allow inserting at the end
+      // final bool newBool = Random().nextBool();
+
+      wallpapers.insert(
+        randomIndex,
+        Channels(
+          id: 'id$i',
+          image: gifUrl,
+          title: 'Ad',
+        ),
+      );
+    }
+  }
+
   bool _onScrollNotification(ScrollNotification notification) {
     if (notification is ScrollEndNotification &&
         notification.metrics.extentAfter <= 1400) {
-      fetchStars();
+      fetchChannels();
     }
     return false;
   }
@@ -82,6 +152,8 @@ class _ChannelScreenState extends State<ChannelScreen> {
             onNotification: _onScrollNotification,
             child: ChannelCard(
               content: channels,
+              link: nonLinearClickThroughUrl,
+              image: gifUrl,
             ),
           ),
           if (isLoading)
