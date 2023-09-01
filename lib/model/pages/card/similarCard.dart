@@ -10,13 +10,21 @@ import 'package:eroswatch/helper/videos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/util/utils.dart';
 import 'package:eroswatch/video_player/video_player.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../components/api_service.dart';
 import '../detail_screen.dart';
 
 class SimilarCard extends StatefulWidget {
   final List<Videos> content;
+  final String link;
+  final String image;
 
-  const SimilarCard({Key? key, required this.content}) : super(key: key);
+  const SimilarCard({
+    Key? key,
+    required this.content,
+    this.image = 'test',
+    this.link = '',
+  }) : super(key: key);
 
   @override
   _CardScreenState createState() => _CardScreenState();
@@ -50,6 +58,12 @@ class _CardScreenState extends State<SimilarCard> {
     );
   }
 
+  void handleClickButton(String nonLinearClickThroughUrl) {
+    launchUrl(
+      Uri.parse(nonLinearClickThroughUrl.trim()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredContent = widget.content
@@ -75,14 +89,8 @@ class _CardScreenState extends State<SimilarCard> {
         bool isPlaying = index == _currentPlayingIndex;
         return GestureDetector(
           onTap: () {
-            if (changeOnTap) {
-              launchAdsUrl(context, browser).then(
-                (_) => setState(
-                  () {
-                    changeOnTap = false;
-                  },
-                ),
-              );
+            if (!newImage.contains('spankbang')) {
+              handleClickButton(widget.link);
             } else {
               Navigator.push(
                 context,

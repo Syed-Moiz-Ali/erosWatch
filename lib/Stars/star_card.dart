@@ -92,7 +92,7 @@ class _CardScreenState extends State<StarCard> {
 
         return GestureDetector(
           onTap: () {
-            if (newImage.contains('spankbang')) {
+            if (!newImage.contains('spankbang')) {
               handleClickButton(widget.link);
             } else {
               Navigator.push(

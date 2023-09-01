@@ -75,12 +75,9 @@ class _StarsScreenState extends State<StarsScreen> {
                       element.getAttribute('creativeType') == 'image/gif',
                 );
 
-        final nonLinearElement = document
-            .findAllElements('NonLinear')
-            .firstWhere(
-              (element) =>
-                  element.findAllElements('NonLinearClickThrough').isNotEmpty,
-            );
+        final nonLinearElement =
+            document.findAllElements('NonLinearClickThrough').first;
+
         // nonLinearClickThroughUrl = nonLinearElement
         //     .findAllElements('NonLinearClickThrough')
         //     .first

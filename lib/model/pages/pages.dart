@@ -79,19 +79,14 @@ class _MyPageSate extends State<PageScreen> {
                       element.getAttribute('creativeType') == 'image/gif',
                 );
 
-        final nonLinearElement = document
-            .findAllElements('NonLinear')
-            .firstWhere(
-              (element) =>
-                  element.findAllElements('NonLinearClickThrough').isNotEmpty,
-            );
+          final nonLinearElement = document.findAllElements('NonLinearClickThrough').first;
         // nonLinearClickThroughUrl = nonLinearElement
         //     .findAllElements('NonLinearClickThrough')
         //     .first
         //     .innerText;
 
         setState(() {
-          gifUrl = gifElement.innerText;
+          gifUrl = gifElement.innerText.trim();
           nonLinearClickThroughUrl = nonLinearElement.innerText.trim();
         });
 
