@@ -94,7 +94,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
         if (kDebugMode) {
           print('Github Version: $releaseVersion');
         }
-        if (appVersionLastInt > githubVersionInt!) {
+        if (appVersionLastInt < githubVersionInt!) {
           _showUpdateDialog(latestRelease);
         } else {
           setState(() {
