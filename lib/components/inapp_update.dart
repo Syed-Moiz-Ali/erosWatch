@@ -115,13 +115,22 @@ class _UpdateScreenState extends State<UpdateScreen> {
     final List<dynamic> assets = latestRelease['assets'];
 
     // Find the asset with the desired APK name
-    final Map<String, dynamic>? apkAsset = assets.firstWhere(
-      (asset) => asset['name'] == 'app-armeabi-v7a-release.apk',
-      orElse: () => null,
-    );
-
-    if (apkAsset != null) {
-      final String apkDownloadUrl = apkAsset['browser_download_url'];
+    // final Map<String, dynamic>? apkAsset = assets.firstWhere(
+    //   (asset) => asset['name'] == 'app-armeabi-v7a-release.apk',
+    //   orElse: () => null,
+    // );
+    String? apkDownloadUrl;
+    for (final asset in assets) {
+      final String assetName = asset['name'];
+      if (assetName == 'app-armeabi-v7a-release.apk') {
+        setState(() {
+          apkDownloadUrl = asset['browser_download_url'];
+        });
+        break; // Exit the loop when the first matching asset is found
+      }
+    }
+    if (apkDownloadUrl != null) {
+      // final String apkDownloadUrl = apkAsset['browser_download_url'];
       final String releaseVersion = latestRelease['tag_name'];
 
       showDialog(
@@ -154,7 +163,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => _startDownload(apkDownloadUrl),
+                onPressed: () => _startDownload(apkDownloadUrl!),
                 icon: const Icon(Icons.download_rounded),
                 label: const Text('Update Now'),
                 style: ElevatedButton.styleFrom(
