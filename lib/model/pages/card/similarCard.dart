@@ -1,8 +1,6 @@
 // ignore_for_file: file_names, library_private_types_in_public_api
 
 import 'dart:convert';
-import 'dart:math';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -10,7 +8,6 @@ import 'package:eroswatch/helper/videos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/util/utils.dart';
 import 'package:eroswatch/video_player/video_player.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../components/api_service.dart';
 import '../detail_screen.dart';
 
@@ -140,7 +137,7 @@ class _CardScreenState extends State<SimilarCard> {
                       // color: Colors.blueAccent,
                       height: 150,
                       width: 210,
-                      child: isPlaying
+                      child: isPlaying && !newImage.contains('gif')
                           ? CustomVideoPlayer(
                               videoUrl: videos.preview,
                             )
