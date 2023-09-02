@@ -37,11 +37,16 @@ class _CardScreenState extends State<SimilarCard> {
   //     {};
   int _currentPlayingIndex = -1;
   bool changeOnTap = false;
+  final wallpaperStorage = WallpaperStorage<Videos>(
+    storageKey: 'favorites',
+    fromJson: (json) => Videos.fromJson(json),
+    toJson: (videos) => videos.toJson(),
+  );
   @override
   void initState() {
     super.initState();
 
-    WallpaperStorage.getWallpapers().then((value) => loadFavorites());
+    wallpaperStorage.getDataList().then((value) => loadFavorites());
   }
 
   text(String text) {
@@ -58,10 +63,14 @@ class _CardScreenState extends State<SimilarCard> {
     );
   }
 
-  void handleClickButton(String nonLinearClickThroughUrl) {
-    launchUrl(
-      Uri.parse(nonLinearClickThroughUrl.trim()),
-    );
+  void handleClickButton(
+      BuildContext context, String nonLinearClickThroughUrl) {
+    // launchUrl(
+    //   Uri.parse(nonLinearClickThroughUrl.trim()),
+    // );
+    inVideoAddLaunch(context, browser, nonLinearClickThroughUrl);
+
+    // Start a timer to reset showAd to true after 5 minutes
   }
 
   @override
@@ -89,8 +98,8 @@ class _CardScreenState extends State<SimilarCard> {
         bool isPlaying = index == _currentPlayingIndex;
         return GestureDetector(
           onTap: () {
-            if (!newImage.contains('spankbang')) {
-              handleClickButton(widget.link);
+            if (newImage.contains('gif')) {
+              handleClickButton(context, widget.link);
             } else {
               Navigator.push(
                 context,
@@ -198,17 +207,17 @@ class _CardScreenState extends State<SimilarCard> {
         favorites = [];
       }
     });
-    await WallpaperStorage.getWallpapers();
+    await wallpaperStorage.getDataList();
   }
 
   Future<void> addToFavorites(Videos item) async {
     Videos videos = item;
     favorites.add(item);
-    await WallpaperStorage.storeWallpaper(videos);
+    await wallpaperStorage.storeData(videos);
   }
 
   Future<void> removeFromFavorites(id) async {
-    await WallpaperStorage.removeWallpaper(id);
+    await wallpaperStorage.removeData(id);
   }
 
   void showRemoveDialog(BuildContext context, Videos item) {
@@ -289,36 +298,5 @@ class MyObject {
       json['name'],
       json['age'],
     );
-  }
-}
-
-class WallpaperStorage {
-  static const String wallpaperKey = 'favorites';
-
-  static Future<void> storeWallpaper(Videos videos) async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = await getWallpapers();
-
-    wallpaperList.add(videos);
-
-    await prefs.setStringList(
-        wallpaperKey, wallpaperList.map((e) => jsonEncode(e)).toList());
-  }
-
-  static Future<List<Videos>> getWallpapers() async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = prefs.getStringList(wallpaperKey) ?? [];
-
-    return wallpaperList.map((e) => Videos.fromJson(jsonDecode(e))).toList();
-  }
-
-  static Future<void> removeWallpaper(String wallpaperId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = await getWallpapers();
-
-    wallpaperList.removeWhere((videos) => videos.id == wallpaperId);
-
-    await prefs.setStringList(
-        wallpaperKey, wallpaperList.map((e) => jsonEncode(e)).toList());
   }
 }

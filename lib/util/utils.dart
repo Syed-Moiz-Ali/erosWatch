@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:math';
+import 'package:eroswatch/helper/videos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 ChromeSafariBrowser? openBrowser;
 Future<void> launchAdsUrl(
@@ -65,4 +68,53 @@ Future<void> inVideoAddLaunch(
       ),
     ),
   );
+}
+
+class WallpaperStorage<T> {
+  final String storageKey;
+  final T Function(Map<String, dynamic>) fromJson;
+  final Map<String, dynamic> Function(T) toJson;
+
+  WallpaperStorage({
+    required this.storageKey,
+    required this.fromJson,
+    required this.toJson,
+  });
+
+  Future<void> storeData(T data) async {
+    final prefs = await SharedPreferences.getInstance();
+    final dataList = await getDataList();
+
+    dataList.add(data);
+
+    await prefs.setStringList(
+        storageKey, dataList.map((e) => jsonEncode(toJson(e))).toList());
+  }
+
+  Future<List<T>> getDataList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dataList = prefs.getStringList(storageKey) ?? [];
+
+    return dataList.map((e) => fromJson(jsonDecode(e))).toList();
+  }
+
+  Future<void> removeData(String dataId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final dataList = await getDataList();
+
+    dataList.removeWhere((data) {
+      // final item = fromJson(jsonDecode(data as String));
+      if (data is Videos && data.id == dataId) {
+        return true;
+      } else if (data is Stars && data.id == dataId) {
+        return true;
+      } else if (data is Channels && data.id == dataId) {
+        return true;
+      }
+      return false;
+    });
+
+    await prefs.setStringList(
+        storageKey, dataList.map((e) => jsonEncode(toJson(e))).toList());
+  }
 }

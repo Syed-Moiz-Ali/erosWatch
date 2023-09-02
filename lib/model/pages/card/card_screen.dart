@@ -12,6 +12,7 @@ import 'package:eroswatch/helper/videos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/video_player/video_player.dart';
 import 'package:eroswatch/components/api_service.dart';
+import '../../../util/utils.dart';
 import '../detail_screen.dart';
 
 class CardScreen extends StatefulWidget {
@@ -34,11 +35,17 @@ class _CardScreenState extends State<CardScreen> {
   bool changeOnTap = true;
   // final Map<int, bool> _isPlayingMap =
   //     {};
+  final wallpaperStorage = WallpaperStorage<Videos>(
+    storageKey: 'favorites',
+    fromJson: (json) => Videos.fromJson(json),
+    toJson: (videos) => videos.toJson(),
+  );
+
   int _currentPlayingIndex = -1;
   @override
   void initState() {
     super.initState();
-    WallpaperStorage.getWallpapers().then((value) => loadFavorites());
+    wallpaperStorage.getDataList().then((value) => loadFavorites());
   }
 
   text(String text) {
@@ -193,17 +200,17 @@ class _CardScreenState extends State<CardScreen> {
         favorites = [];
       }
     });
-    await WallpaperStorage.getWallpapers();
+    await wallpaperStorage.getDataList();
   }
 
   Future<void> addToFavorites(Videos item) async {
     Videos videos = item;
     favorites.add(item);
-    await WallpaperStorage.storeWallpaper(videos);
+    await wallpaperStorage.storeData(videos);
   }
 
   Future<void> removeFromFavorites(id) async {
-    await WallpaperStorage.removeWallpaper(id);
+    await wallpaperStorage.removeData(id);
   }
 
   void showRemoveDialog(BuildContext context, Videos item) {
@@ -350,6 +357,19 @@ class _MyWebViewScreenState extends State<MyWebViewScreen> {
               javaScriptEnabled: true,
             ),
           ),
+          onLoadError: (controller, url, index, error) {
+            if (kDebugMode) {
+              print("Error loading $url: $error");
+            }
+          },
+          // onLoadStart: (controller, url) {
+          //   _webViewController = controller;
+          //   _loadPopupAdCode();
+          // },
+          // onLoadStop: (controller, url) {
+          //   _webViewController = controller;
+          //   _loadPopupAdCode();
+          // },
           onWebViewCreated: (controller) {
             _webViewController = controller;
             _loadPopupAdCode();
@@ -374,84 +394,123 @@ var adConfig = {
 };
 VideoSlider.init(adConfig);
 </script>
+
 <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
  <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
  <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
 
-    ''';
-    const popupAdCode2 = '''
-  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
+ <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
  <ins class="eas6a97888e" data-zoneid="5067098" data-keywords="keywords" data-sub="123450000"></ins> 
  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+ 
 <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
+ <ins class="eas6a97888e" data-zoneid="5067384"></ins> 
  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
- <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
-    ''';
-    const popupAdCode3 = '''
-  
+ 
 <script type="application/javascript" 
 data-idzone="5067406"  data-ad_frequency_count="30"  data-ad_frequency_period="5"  data-type="mobile" 
 data-browser_settings="1" 
 data-ad_trigger_method="3" 
 
 src="https://a.pemsrv.com/fp-interstitial.js"></script>
-<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
- <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
-    ''';
-    const popupAdCode4 = '''
-  
+<script type="application/javascript" src="https://a.magsrv.com/video-slider.js"></script>
 <script type="application/javascript">
-    var ad_idzone = "5068082",
-    ad_popup_fallback = false,
-    ad_popup_force = true,
-    ad_chrome_enabled = true,
-    ad_new_tab = false,
-    ad_frequency_period = 5,
-    ad_frequency_count = 3,
-    ad_trigger_method = 3,
-    ad_trigger_delay = 0; 
+var adConfig = {
+    "idzone": 5068084,
+    "frequency_period": 1440,
+    "close_after": 4,
+    "on_complete": "repeat",
+    "screen_density": 30,
+    "cta_enabled": 1
+};
+VideoSlider.init(adConfig);
 </script>
-<script type="application/javascript" src="https://a.pemsrv.com/popunder1000.js"></script>
-<script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
- <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script> 
- <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins> 
- <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+
     ''';
+//     const popupAdCode2 = '''
+//   <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+//  <ins class="eas6a97888e" data-zoneid="5067098" data-keywords="keywords" data-sub="123450000"></ins>
+//  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+// <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+//  <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins>
+//  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+//  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+//  <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins>
+//  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+//     ''';
+//     const popupAdCode3 = '''
 
-    final int randomIndex = Random().nextInt(5);
-    String selectedPopupAdCode;
+// <script type="application/javascript"
+// data-idzone="5067406"  data-ad_frequency_count="30"  data-ad_frequency_period="5"  data-type="mobile"
+// data-browser_settings="1"
+// data-ad_trigger_method="3"
 
-    switch (randomIndex) {
-      case 0:
-        selectedPopupAdCode = popupAdCode1;
-        break;
-      case 1:
-        selectedPopupAdCode = popupAdCode2;
-        break;
-      case 3:
-        selectedPopupAdCode = popupAdCode3;
-        break;
-      case 4:
-        selectedPopupAdCode = popupAdCode4;
-        break;
-      default:
-        selectedPopupAdCode = popupAdCode1;
-        break;
-    }
+// src="https://a.pemsrv.com/fp-interstitial.js"></script>
+// <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+//  <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins>
+//  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+//  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+//  <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins>
+//  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+//     ''';
+//     const popupAdCode4 = '''
+
+// <script type="application/javascript">
+//     var ad_idzone = "5068082",
+//     ad_popup_fallback = false,
+//     ad_popup_force = true,
+//     ad_chrome_enabled = true,
+//     ad_new_tab = false,
+//     ad_frequency_period = 5,
+//     ad_frequency_count = 3,
+//     ad_trigger_method = 3,
+//     ad_trigger_delay = 0;
+// </script>
+// <script type="application/javascript" src="https://a.pemsrv.com/popunder1000.js"></script>
+// <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+//  <ins class="eas6a97888e" data-zoneid="5067006" data-keywords="keywords" data-sub="123450000"></ins>
+//  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+//  <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+//  <ins class="eas6a97888e" data-zoneid="5067090" data-keywords="keywords" data-sub="123450000"></ins>
+//  <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+//     ''';
+
+    // final int randomIndex = Random().nextInt(5);
+    // late String selectedPopupAdCode;
+    // print(randomIndex);
+    // switch (randomIndex) {
+    //   case 0:
+    //     setState(() {
+    //       selectedPopupAdCode = popupAdCode1;
+    //     });
+    //     break;
+    //   case 1:
+    //     setState(() {
+    //       selectedPopupAdCode = popupAdCode2;
+    //     });
+    //     break;
+    //   case 3:
+    //     setState(() {
+    //       selectedPopupAdCode = popupAdCode3;
+    //     });
+    //     break;
+    //   case 4:
+    //     setState(() {
+    //       selectedPopupAdCode = popupAdCode4;
+    //     });
+    //     break;
+    //   default:
+    //     setState(() {
+    //       selectedPopupAdCode = popupAdCode1;
+    //     });
+    //     break;
+    // }
     _webViewController?.loadData(
-      data: selectedPopupAdCode,
+      data: popupAdCode1,
       mimeType: 'text/html',
       encoding: 'utf-8',
     );
@@ -476,36 +535,5 @@ class MyObject {
       json['name'],
       json['age'],
     );
-  }
-}
-
-class WallpaperStorage {
-  static const String wallpaperKey = 'favorites';
-
-  static Future<void> storeWallpaper(Videos videos) async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = await getWallpapers();
-
-    wallpaperList.add(videos);
-
-    await prefs.setStringList(
-        wallpaperKey, wallpaperList.map((e) => jsonEncode(e)).toList());
-  }
-
-  static Future<List<Videos>> getWallpapers() async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = prefs.getStringList(wallpaperKey) ?? [];
-
-    return wallpaperList.map((e) => Videos.fromJson(jsonDecode(e))).toList();
-  }
-
-  static Future<void> removeWallpaper(String wallpaperId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = await getWallpapers();
-
-    wallpaperList.removeWhere((videos) => videos.id == wallpaperId);
-
-    await prefs.setStringList(
-        wallpaperKey, wallpaperList.map((e) => jsonEncode(e)).toList());
   }
 }

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/components/api_service.dart';
 import 'package:eroswatch/components/dropdown.dart';
@@ -27,6 +29,7 @@ class _MyPageSate extends State<PageScreen> {
     newParamForStarAndChannel: widget.type,
     id: widget.id,
   );
+  ChromeSafariBrowser browser = ChromeSafariBrowser();
   List<Videos> wallpapers = [];
   late int pageNumber = 1;
   bool isLoading = false;
@@ -79,7 +82,8 @@ class _MyPageSate extends State<PageScreen> {
                       element.getAttribute('creativeType') == 'image/gif',
                 );
 
-          final nonLinearElement = document.findAllElements('NonLinearClickThrough').first;
+        final nonLinearElement =
+            document.findAllElements('NonLinearClickThrough').first;
         // nonLinearClickThroughUrl = nonLinearElement
         //     .findAllElements('NonLinearClickThrough')
         //     .first
@@ -112,10 +116,12 @@ class _MyPageSate extends State<PageScreen> {
   }
 
   // Function to handle the button click
-  void handleClickButton(String nonLinearClickThroughUrl) {
-    launchUrl(
-      Uri.parse(nonLinearClickThroughUrl.trim()),
-    );
+  void handleClickButton(
+      BuildContext context, String nonLinearClickThroughUrl) {
+    // launchUrl(
+    //   Uri.parse(nonLinearClickThroughUrl.trim()),
+    // );
+    inVideoAddLaunch(context, browser, nonLinearClickThroughUrl);
     setState(() {
       showAd = false; // Set showAd to false when the button is clicked
     });
@@ -244,7 +250,7 @@ class _MyPageSate extends State<PageScreen> {
           if (showAd)
             GestureDetector(
               onTap: () {
-                handleClickButton(nonLinearClickThroughUrl);
+                handleClickButton(context, nonLinearClickThroughUrl);
               },
               child: Container(
                 width: MediaQuery.of(context).size.width,

@@ -2,14 +2,14 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'dart:convert';
-import 'dart:math';
+
+import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:eroswatch/Stars/star_container_screen.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../components/api_service.dart';
 
@@ -34,7 +34,11 @@ class _CardScreenState extends State<StarCard> {
   bool changeOnTap = true;
   // final Map<int, bool> _isPlayingMap =
   //     {};
-
+  final wallpaperStorage = WallpaperStorage<Stars>(
+    storageKey: 'favoriteStars',
+    fromJson: (json) => Stars.fromJson(json),
+    toJson: (videos) => videos.toJson(),
+  );
   @override
   void initState() {
     super.initState();
@@ -42,29 +46,14 @@ class _CardScreenState extends State<StarCard> {
     // _isPlaying = false;
   }
 
-  List<ImageData> imageList = [
-    ImageData(
-      imageUrl:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSsLWVn6ZOrtsgl4lhc4C9DnRGk8ituA04w&usqp=CAU',
-      title: 'Image 2',
-    ),
-  ];
-  Random random = Random();
-  late int randomIndex = random.nextInt(imageList.length);
+  void handleClickButton(
+      BuildContext context, String nonLinearClickThroughUrl) {
+    // launchUrl(
+    //   Uri.parse(nonLinearClickThroughUrl.trim()),
+    // );
+    inVideoAddLaunch(context, browser, nonLinearClickThroughUrl);
 
-// Access the randomly selected image and its corresponding URL
-  late ImageData randomImage = imageList[randomIndex];
-  late String demoimageUrl = randomImage.imageUrl;
-  late String demotitle = randomImage.title;
-  final demoImage =
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSsLWVn6ZOrtsgl4lhc4C9DnRGk8ituA04w&usqp=CAU";
-  final demoVideo =
-      "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4";
-
-  void handleClickButton(String nonLinearClickThroughUrl) {
-    launchUrl(
-      Uri.parse(nonLinearClickThroughUrl.trim()),
-    );
+    // Start a timer to reset showAd to true after 5 minutes
   }
 
   @override
@@ -93,7 +82,7 @@ class _CardScreenState extends State<StarCard> {
         return GestureDetector(
           onTap: () {
             if (!newImage.contains('spankbang')) {
-              handleClickButton(widget.link);
+              handleClickButton(context, widget.link);
             } else {
               Navigator.push(
                 context,
@@ -204,17 +193,17 @@ class _CardScreenState extends State<StarCard> {
         favorites = [];
       }
     });
-    await WallpaperStorage.getWallpapers();
+    await wallpaperStorage.getDataList();
   }
 
   Future<void> addToFavorites(Stars item) async {
     Stars stars = item;
     favorites.add(item);
-    await WallpaperStorage.storeWallpaper(stars);
+    await wallpaperStorage.storeData(stars);
   }
 
   Future<void> removeFromFavorites(id) async {
-    await WallpaperStorage.removeWallpaper(id);
+    await wallpaperStorage.removeData(id);
   }
 
   void showRemoveDialog(BuildContext context, Stars item) {
@@ -277,51 +266,51 @@ class _CardScreenState extends State<StarCard> {
   }
 }
 
-class WallpaperStorage {
-  static const String wallpaperKey = 'favoriteStars';
+// class WallpaperStorage {
+//   static const String wallpaperKey = 'favoriteStars';
 
-  static Future<void> storeWallpaper(Stars stars) async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = await getWallpapers();
+//   static Future<void> storeWallpaper(Stars stars) async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final wallpaperList = await getWallpapers();
 
-    wallpaperList.add(stars);
+//     wallpaperList.add(stars);
 
-    await prefs.setStringList(
-      wallpaperKey,
-      wallpaperList
-          .map(
-            (e) => jsonEncode(e),
-          )
-          .toList(),
-    );
-  }
+//     await prefs.setStringList(
+//       wallpaperKey,
+//       wallpaperList
+//           .map(
+//             (e) => jsonEncode(e),
+//           )
+//           .toList(),
+//     );
+//   }
 
-  static Future<List<Stars>> getWallpapers() async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = prefs.getStringList(wallpaperKey) ?? [];
+//   static Future<List<Stars>> getWallpapers() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final wallpaperList = prefs.getStringList(wallpaperKey) ?? [];
 
-    return wallpaperList
-        .map(
-          (e) => Stars.fromJson(
-            jsonDecode(e),
-          ),
-        )
-        .toList();
-  }
+//     return wallpaperList
+//         .map(
+//           (e) => Stars.fromJson(
+//             jsonDecode(e),
+//           ),
+//         )
+//         .toList();
+//   }
 
-  static Future<void> removeWallpaper(String wallpaperId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = await getWallpapers();
+//   static Future<void> removeWallpaper(String wallpaperId) async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final wallpaperList = await getWallpapers();
 
-    wallpaperList.removeWhere((stars) => stars.id == wallpaperId);
+//     wallpaperList.removeWhere((stars) => stars.id == wallpaperId);
 
-    await prefs.setStringList(
-      wallpaperKey,
-      wallpaperList
-          .map(
-            (e) => jsonEncode(e),
-          )
-          .toList(),
-    );
-  }
-}
+//     await prefs.setStringList(
+//       wallpaperKey,
+//       wallpaperList
+//           .map(
+//             (e) => jsonEncode(e),
+//           )
+//           .toList(),
+//     );
+//   }
+// }

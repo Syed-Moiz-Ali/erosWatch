@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 
+import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -34,6 +35,11 @@ class _ChannelScreenState extends State<ChannelCard> {
   final ChromeSafariBrowser browser = ChromeSafariBrowser();
   int _currentPlayingIndex = -1;
   bool changeOnTap = true;
+  final wallpaperStorage = WallpaperStorage<Channels>(
+    storageKey: 'favoriteChannels',
+    fromJson: (json) => Channels.fromJson(json),
+    toJson: (videos) => videos.toJson(),
+  );
   @override
   void initState() {
     super.initState();
@@ -46,10 +52,14 @@ class _ChannelScreenState extends State<ChannelCard> {
   final demoVideo =
       "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4";
 
-  void handleClickButton(String nonLinearClickThroughUrl) {
-    launchUrl(
-      Uri.parse(nonLinearClickThroughUrl.trim()),
-    );
+  void handleClickButton(
+      BuildContext context, String nonLinearClickThroughUrl) {
+    // launchUrl(
+    //   Uri.parse(nonLinearClickThroughUrl.trim()),
+    // );
+    inVideoAddLaunch(context, browser, nonLinearClickThroughUrl);
+
+    // Start a timer to reset showAd to true after 5 minutes
   }
 
   @override
@@ -72,7 +82,7 @@ class _ChannelScreenState extends State<ChannelCard> {
 
         final Channels channel = filteredContent[index];
         final newImage = channel.image;
-        print(newImage);
+        // print(newImage);
         bool isPlaying = index == _currentPlayingIndex;
         if (kDebugMode) {
           print(isPlaying);
@@ -80,7 +90,7 @@ class _ChannelScreenState extends State<ChannelCard> {
         return GestureDetector(
           onTap: () {
             if (!newImage.contains('spankbang')) {
-              handleClickButton(widget.link);
+              handleClickButton(context, widget.link);
             } else {
               Navigator.push(
                 context,
@@ -194,17 +204,17 @@ class _ChannelScreenState extends State<ChannelCard> {
         favorites = [];
       }
     });
-    await WallpaperStorage.getWallpapers();
+    await wallpaperStorage.getDataList();
   }
 
   Future<void> addToFavorites(Channels item) async {
     Channels channels = item;
     favorites.add(item);
-    await WallpaperStorage.storeWallpaper(channels);
+    await wallpaperStorage.storeData(channels);
   }
 
   Future<void> removeFromFavorites(id) async {
-    await WallpaperStorage.removeWallpaper(id);
+    await wallpaperStorage.removeData(id);
   }
 
   void showRemoveDialog(BuildContext context, Channels item) {
@@ -264,54 +274,5 @@ class _ChannelScreenState extends State<ChannelCard> {
   @override
   void dispose() {
     super.dispose();
-  }
-}
-
-class WallpaperStorage {
-  static const String wallpaperKey = 'favoriteChannels';
-
-  static Future<void> storeWallpaper(Channels stars) async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = await getWallpapers();
-
-    wallpaperList.add(stars);
-
-    await prefs.setStringList(
-      wallpaperKey,
-      wallpaperList
-          .map(
-            (e) => jsonEncode(e),
-          )
-          .toList(),
-    );
-  }
-
-  static Future<List<Channels>> getWallpapers() async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = prefs.getStringList(wallpaperKey) ?? [];
-
-    return wallpaperList
-        .map(
-          (e) => Channels.fromJson(
-            jsonDecode(e),
-          ),
-        )
-        .toList();
-  }
-
-  static Future<void> removeWallpaper(String wallpaperId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = await getWallpapers();
-
-    wallpaperList.removeWhere((stars) => stars.id == wallpaperId);
-
-    await prefs.setStringList(
-      wallpaperKey,
-      wallpaperList
-          .map(
-            (e) => jsonEncode(e),
-          )
-          .toList(),
-    );
   }
 }

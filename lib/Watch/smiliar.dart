@@ -57,7 +57,7 @@ class _SimilarScreenState extends State<SimilarScreen> {
     try {
       final List<Videos> newWallpapers =
           await apiService.fetchWallpapers(pageNumber);
-
+      insertRandomAds(newWallpapers);
       setState(() {
         wallpapers.addAll(newWallpapers);
         pageNumber++;

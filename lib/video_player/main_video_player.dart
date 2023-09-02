@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'dart:math';
+import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -104,19 +105,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                       element.getAttribute('creativeType') == 'image/gif',
                 );
 
-        final nonLinearElement = document
-            .findAllElements('NonLinear')
-            .firstWhere(
-              (element) =>
-                  element.findAllElements('NonLinearClickThrough').isNotEmpty,
-            );
+        final nonLinearElement =
+            document.findAllElements('NonLinearClickThrough').first;
         // nonLinearClickThroughUrl = nonLinearElement
         //     .findAllElements('NonLinearClickThrough')
         //     .first
         //     .innerText;
 
         setState(() {
-          gifUrl = gifElement.innerText;
+          gifUrl = gifElement.innerText.trim();
           nonLinearClickThroughUrl = nonLinearElement.innerText.trim();
         });
 
@@ -399,14 +396,19 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
   }
 
-  void handleClickButton(String nonLinearClickThroughUrl) {
-    launchUrl(
-      Uri.parse(nonLinearClickThroughUrl.trim()),
-    );
+  void handleClickButton(
+      BuildContext context, String nonLinearClickThroughUrl) {
+    // launchUrl(
+    //   Uri.parse(nonLinearClickThroughUrl.trim()),
+    // );
+    inVideoAddLaunch(context, browser, nonLinearClickThroughUrl);
+
     setState(() {
+      if (_videoPlayerController.value.isPlaying) {
+        _videoPlayerController.pause();
+      }
       showAd = false; // Set showAd to false when the button is clicked
     });
-
     // Start a timer to reset showAd to true after 5 minutes
   }
 
@@ -606,17 +608,24 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                         children: [
                           GestureDetector(
                             onTap: () {
-                              handleClickButton(nonLinearClickThroughUrl);
+                              handleClickButton(
+                                  context, nonLinearClickThroughUrl);
                             },
                             child: Container(
                               width: screenWidth / 2.1,
                               height: screenHeight / 2.1,
-                              color: Colors.grey[400],
-                              child: Image.network(
-                                gifUrl,
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[400],
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.network(
+                                  gifUrl,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),

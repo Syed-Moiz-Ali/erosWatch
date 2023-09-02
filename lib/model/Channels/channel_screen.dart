@@ -93,12 +93,12 @@ class _ChannelScreenState extends State<ChannelScreen> {
           nonLinearClickThroughUrl = nonLinearElement.innerText.trim();
         });
 
-        if (kDebugMode) {
-          print('gifUrl; $gifUrl');
-        }
-        if (kDebugMode) {
-          print('nonLinearClickThroughUrl; $nonLinearClickThroughUrl');
-        }
+        // if (kDebugMode) {
+        //   print('gifUrl; $gifUrl');
+        // }
+        // if (kDebugMode) {
+        //   print('nonLinearClickThroughUrl; $nonLinearClickThroughUrl');
+        // }
       }
     } catch (e) {
       if (kDebugMode) {

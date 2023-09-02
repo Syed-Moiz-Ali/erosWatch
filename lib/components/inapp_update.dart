@@ -94,7 +94,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
         if (kDebugMode) {
           print('Github Version: $releaseVersion');
         }
-        if (appVersionLastInt < githubVersionInt!) {
+        if (appVersionLastInt > githubVersionInt!) {
           _showUpdateDialog(latestRelease);
         } else {
           setState(() {
@@ -112,63 +112,88 @@ class _UpdateScreenState extends State<UpdateScreen> {
   }
 
   void _showUpdateDialog(Map<String, dynamic> latestRelease) {
-    final String apkDownloadUrl =
-        latestRelease['assets'][0]['browser_download_url'];
-    final String releaseVersion = latestRelease['tag_name'];
+    final List<dynamic> assets = latestRelease['assets'];
 
-    // final bool isVersionNewer = latestVersion.compareTo(releaseVersion) < 0;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(
-              Icons.update,
-              color: Colors.blue,
-            ),
-            SizedBox(width: 8),
-            Text(
-              'Update Available',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'A new version ($releaseVersion) of the app is available.',
-              style: const TextStyle(
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => _startDownload(apkDownloadUrl),
-              icon: const Icon(Icons.download_rounded),
-              label: const Text('Update Now'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue,
-              ),
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              SystemNavigator.pop(); // Exit the app
-            },
-            child: const Text('Not Now'),
-          ),
-        ],
-      ),
+    // Find the asset with the desired APK name
+    final Map<String, dynamic>? apkAsset = assets.firstWhere(
+      (asset) => asset['name'] == 'app-armeabi-v7a-release.apk',
+      orElse: () => null,
     );
+
+    if (apkAsset != null) {
+      final String apkDownloadUrl = apkAsset['browser_download_url'];
+      final String releaseVersion = latestRelease['tag_name'];
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(
+                Icons.update,
+                color: Colors.blue,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Update Available',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'A new version ($releaseVersion) of the app is available.',
+                style: const TextStyle(
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => _startDownload(apkDownloadUrl),
+                icon: const Icon(Icons.download_rounded),
+                label: const Text('Update Now'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue,
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                SystemNavigator.pop(); // Exit the app
+              },
+              child: const Text('Not Now'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Handle the case where the desired APK asset is not found
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Update Not Found'),
+          content: const Text('The update APK was not found.'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                SystemNavigator.pop(); // Exit the app
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   void _startDownload(String apkDownloadUrl) {
