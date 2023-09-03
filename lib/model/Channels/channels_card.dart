@@ -12,7 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/Stars/star_container_screen.dart';
 import 'package:eroswatch/components/api_service.dart';
 import 'package:eroswatch/helper/videos.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ChannelCard extends StatefulWidget {
   final List<Channels> content;
@@ -204,7 +203,7 @@ class _ChannelScreenState extends State<ChannelCard> {
         favorites = [];
       }
     });
-    await wallpaperStorage.getDataList();
+    await wallpaperStorage.restoreData();
   }
 
   Future<void> addToFavorites(Channels item) async {

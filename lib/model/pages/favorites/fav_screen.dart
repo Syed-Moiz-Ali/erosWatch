@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,9 +29,9 @@ class _FavScreenState extends State<FavScreen> {
         children: [
           FavCard(
             type: _selectedType,
-            getChannelsWallpapers: getChannels(),
-            getStarsWallpapers: getStars(),
-            getVideosWallpapers: getVideos(),
+            getChannelsWallpapers: channelsStorage.restoreData(),
+            getStarsWallpapers: starsStorage.restoreData(),
+            getVideosWallpapers: videosStorage.restoreData(),
             key: _pageKey,
           ),
           Positioned(
@@ -46,29 +47,23 @@ class _FavScreenState extends State<FavScreen> {
     );
   }
 
-  static const String videosKey = 'favorites';
-  static Future<List<Videos>> getVideos() async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = prefs.getStringList(videosKey) ?? [];
+  final videosStorage = WallpaperStorage<Videos>(
+    storageKey: 'favorites', // Use a unique key for each data type
+    fromJson: (json) => Videos.fromJson(json),
+    toJson: (data) => data.toJson(),
+  );
 
-    return wallpaperList.map((e) => Videos.fromJson(jsonDecode(e))).toList();
-  }
+  final starsStorage = WallpaperStorage<Stars>(
+    storageKey: 'favoriteStars',
+    fromJson: (json) => Stars.fromJson(json),
+    toJson: (data) => data.toJson(),
+  );
 
-  static const String starsKey = 'favoriteStars';
-  static Future<List<Stars>> getStars() async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = prefs.getStringList(starsKey) ?? [];
-
-    return wallpaperList.map((e) => Stars.fromJson(jsonDecode(e))).toList();
-  }
-
-  static const String channelKey = 'favoriteChannels';
-  static Future<List<Channels>> getChannels() async {
-    final prefs = await SharedPreferences.getInstance();
-    final wallpaperList = prefs.getStringList(channelKey) ?? [];
-
-    return wallpaperList.map((e) => Channels.fromJson(jsonDecode(e))).toList();
-  }
+  final channelsStorage = WallpaperStorage<Channels>(
+    storageKey: 'favoriteChannels',
+    fromJson: (json) => Channels.fromJson(json),
+    toJson: (data) => data.toJson(),
+  );
 
   void _openMenu() {
     showModalBottomSheet(

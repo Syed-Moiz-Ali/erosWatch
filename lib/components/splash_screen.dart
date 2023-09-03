@@ -1,7 +1,7 @@
-import 'package:eroswatch/components/inapp_update.dart';
+// ignore_for_file: library_private_types_in_public_api
+
+import 'package:eroswatch/auth/authchecker.dart';
 import 'package:flutter/material.dart';
-import 'package:eroswatch/helper/auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -12,22 +12,12 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  late SharedPreferences _prefs;
-  bool enableProtection = false;
-
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
+
     // Call the navigateToSecondScreen function after five seconds
     Future.delayed(const Duration(seconds: 5), navigateToSecondScreen);
-  }
-
-  Future<void> _loadPreferences() async {
-    _prefs = await SharedPreferences.getInstance();
-    setState(() {
-      enableProtection = _prefs.getBool('enableProtection') ?? false;
-    });
   }
 
   // Function to navigate to the second screen
@@ -35,15 +25,22 @@ class _SplashScreenState extends State<SplashScreen>
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            enableProtection ? const AuthPage() : const UpdateScreen(),
+        builder: (context) => const AuthChecker(),
       ),
+    );
+  }
+
+  text(String text, double size, Color color) {
+    return Text(
+      text,
+      style: TextStyle(color: color, fontSize: size),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    // const double size = 30;
     return Scaffold(
       body: Stack(
         children: [
@@ -56,6 +53,20 @@ class _SplashScreenState extends State<SplashScreen>
                 height: 220,
               ),
             ),
+            // Row(
+            //   children: [
+            //     text('E', size, Colors.blue[300]!),
+            //     text('r', size, Colors.blue[300]!),
+            //     text('o', size, Colors.blue[300]!),
+            //     text('s', size, Colors.blue[300]!),
+            //     text('', size, Colors.blue[300]!),
+            //     text('W', size, Colors.blue[300]!),
+            //     text('a', size, Colors.blue[300]!),
+            //     text('t', size, Colors.blue[300]!),
+            //     text('c', size, Colors.blue[300]!),
+            //     text('h', size, Colors.blue[300]!),
+            //   ],
+            // ),
           ),
           Positioned(
             bottom: 20,

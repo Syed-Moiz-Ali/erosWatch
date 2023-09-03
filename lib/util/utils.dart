@@ -1,8 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
+import 'package:appwrite/appwrite.dart';
 import 'package:eroswatch/helper/videos.dart';
+import 'package:eroswatch/services/appwrite.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 ChromeSafariBrowser? openBrowser;
@@ -89,6 +94,7 @@ class WallpaperStorage<T> {
 
     await prefs.setStringList(
         storageKey, dataList.map((e) => jsonEncode(toJson(e))).toList());
+    await backupData(storageKey, dataList);
   }
 
   Future<List<T>> getDataList() async {
@@ -98,9 +104,154 @@ class WallpaperStorage<T> {
     return dataList.map((e) => fromJson(jsonDecode(e))).toList();
   }
 
+// Backup data in version 1.0.2
+  Future<void> backupData(String key, List<T> dataList) async {
+    final externalDir = await getExternalStorageDirectory();
+    final filePath = '${externalDir!.path}/$key.json';
+    final file = File(filePath);
+
+    if (!await file.exists()) {
+      // await file.delete();
+      await file.create();
+    }
+
+    final fileData = jsonEncode(dataList.map((data) => toJson(data)).toList());
+    final promise = await account.get();
+
+    await file.writeAsString(fileData);
+
+    try {
+      final fileMultipartFile = InputFile.fromPath(
+        path: file.path,
+        filename: '$key.json',
+        contentType: 'application/json',
+      );
+
+      final documentList = await database.listDocuments(
+        databaseId: '64f38d70472988fd536c',
+        collectionId: '64f3ad4397e3c3b29210',
+        queries: [
+          Query.equal('name', promise.name),
+          Query.equal('email', promise.email),
+          Query.equal('type', key),
+        ],
+      );
+
+      if (documentList.documents.isEmpty) {
+        final fileDetails = await storage.createFile(
+          file: fileMultipartFile,
+          bucketId: '64f3a92c7ab086900e74',
+          fileId: uniqueId, // Generate a unique ID
+        );
+
+        await database.createDocument(
+          databaseId: '64f38d70472988fd536c',
+          collectionId: '64f3ad4397e3c3b29210',
+          documentId: uniqueId,
+          data: {
+            'name': promise.name,
+            'email': promise.email,
+            'type': key,
+            'fileId': fileDetails.$id,
+          },
+        );
+
+        if (kDebugMode) {
+          print('File uploaded with file ID: ${fileDetails.$id}');
+        }
+      } else {
+        final documentIds =
+            documentList.documents.map((e) => e.data['fileId']).toList();
+
+        for (final documentId in documentIds) {
+          // await storage.updateFile(
+          //   bucketId: '64f3a92c7ab086900e74',
+          //   fileId: documentId,
+          // );
+          await storage.deleteFile(
+            bucketId: '64f3a92c7ab086900e74',
+            fileId: documentId,
+          );
+          await storage.createFile(
+            file: fileMultipartFile,
+            bucketId: '64f3a92c7ab086900e74',
+            fileId: documentId, // Generate a unique ID
+          );
+          if (kDebugMode) {
+            print('File updated with file ID: $documentId');
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error backing up data: $e');
+      }
+    }
+  }
+
+  Future<List<T>> restoreData() async {
+    try {
+      final externalDir = await getExternalStorageDirectory();
+      final promise = await account.get();
+      final file = File('${externalDir!.path}/$storageKey.json');
+      if (!await file.exists()) {
+        final documentQuery = await database.listDocuments(
+          databaseId: '64f38d70472988fd536c',
+          collectionId: '64f3ad4397e3c3b29210',
+          queries: [
+            Query.equal('name', promise.name),
+            Query.equal('email', promise.email),
+            Query.equal('type', storageKey),
+          ],
+        );
+        if (documentQuery.documents.isNotEmpty) {
+          final documentIds =
+              documentQuery.documents.map((e) => e.$id).toList();
+
+          for (final documentId in documentIds) {
+            final document = await database.getDocument(
+              databaseId: '64f38d70472988fd536c',
+              collectionId: '64f3ad4397e3c3b29210',
+              documentId: documentId,
+            );
+
+            if (document.data['fileId'] != null) {
+              final fileId = document.data['fileId'];
+              final response = await storage.getFileDownload(
+                bucketId: '64f3a92c7ab086900e74',
+                fileId: fileId,
+              );
+
+              final file = File('${externalDir.path}/$storageKey.json');
+              await file.writeAsBytes(response);
+              final dataAsString = await file.readAsString();
+              final decodedData = jsonDecode(dataAsString) as List<dynamic>;
+              return decodedData
+                  .map((json) => fromJson(json))
+                  .cast<T>()
+                  .toList();
+            }
+          }
+        } else {
+          final dataList = await getDataList();
+          await backupData(storageKey, dataList);
+        }
+      } else {
+        final dataAsString = await file.readAsString();
+        final decodedData = jsonDecode(dataAsString) as List<dynamic>;
+
+        return decodedData.map((json) => fromJson(json)).cast<T>().toList();
+      }
+    } catch (e) {
+      print('Error restoring data: $e');
+    }
+
+    return [];
+  }
+
   Future<void> removeData(String dataId) async {
     final prefs = await SharedPreferences.getInstance();
-    final dataList = await getDataList();
+    final dataList = await restoreData();
 
     dataList.removeWhere((data) {
       // final item = fromJson(jsonDecode(data as String));
@@ -116,5 +267,6 @@ class WallpaperStorage<T> {
 
     await prefs.setStringList(
         storageKey, dataList.map((e) => jsonEncode(toJson(e))).toList());
+    await backupData(storageKey, dataList);
   }
 }

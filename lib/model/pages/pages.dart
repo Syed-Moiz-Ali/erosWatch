@@ -1,6 +1,7 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:async';
 import 'dart:math';
-
 import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,6 @@ import 'package:eroswatch/components/dropdown.dart';
 import 'package:eroswatch/model/pages/pageconstant.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:xml/xml.dart';
 
 class PageScreen extends StatefulWidget {

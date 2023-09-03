@@ -43,7 +43,7 @@ class _CardScreenState extends State<SimilarCard> {
   void initState() {
     super.initState();
 
-    wallpaperStorage.getDataList().then((value) => loadFavorites());
+    wallpaperStorage.restoreData().then((value) => loadFavorites());
   }
 
   text(String text) {
@@ -204,7 +204,7 @@ class _CardScreenState extends State<SimilarCard> {
         favorites = [];
       }
     });
-    await wallpaperStorage.getDataList();
+    await wallpaperStorage.restoreData();
   }
 
   Future<void> addToFavorites(Videos item) async {

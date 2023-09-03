@@ -193,7 +193,7 @@ class _CardScreenState extends State<StarCard> {
         favorites = [];
       }
     });
-    await wallpaperStorage.getDataList();
+    await wallpaperStorage.restoreData();
   }
 
   Future<void> addToFavorites(Stars item) async {

@@ -144,7 +144,7 @@ class _VideoScreenState extends State<VideoScreen>
             Navigator.push<void>(
               context,
               MaterialPageRoute<void>(
-                builder: (BuildContext context) => SettingsScreen(),
+                builder: (BuildContext context) => const SettingScreen(),
               ),
             );
             // Handle profile icon click

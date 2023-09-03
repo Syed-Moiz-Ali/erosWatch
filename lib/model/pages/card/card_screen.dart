@@ -2,12 +2,11 @@
 // ignore_for_file: must_be_immutable, library_private_types_in_public_api
 
 import 'dart:convert';
-import 'dart:math';
-
+import 'package:appwrite/appwrite.dart';
+import 'package:eroswatch/services/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-
 import 'package:eroswatch/helper/videos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/video_player/video_player.dart';
@@ -40,12 +39,45 @@ class _CardScreenState extends State<CardScreen> {
     fromJson: (json) => Videos.fromJson(json),
     toJson: (videos) => videos.toJson(),
   );
-
+  late RealtimeSubscription subscribtion;
   int _currentPlayingIndex = -1;
   @override
   void initState() {
     super.initState();
-    wallpaperStorage.getDataList().then((value) => loadFavorites());
+    wallpaperStorage.restoreData().then((value) => loadFavorites());
+    subscribe();
+  }
+
+  void subscribe() {
+    subscribtion = realtime.subscribe(['documents']);
+    subscribtion.stream.listen((event) {
+      final eventType = event.events;
+      final payload = event.payload;
+
+      if (eventType.contains('databases.*.collections.*.documents.*.create')) {
+        handleSubscription(payload);
+      } else if (eventType
+          .contains('databases.*.collections.*.documents.*.delete')) {
+        handleSubscription(payload);
+      }
+    });
+  }
+
+  void handleSubscription(Map<String, dynamic> payload) {
+    setState(() {
+      // documents = List<DocumentData>.from(payload['imageUrl']);
+      // listData.documents.map((document) {
+      //   var data = document.data;
+      //   documentId = document.$id;
+      //   return DocumentData(
+      //     email: data['userEmail'],
+      //     name: data['userName'],
+      //     imageUrl: data['url'],
+      //     date: data['date'],
+      //   );
+      // }).toList();
+      wallpaperStorage.restoreData();
+    });
   }
 
   text(String text) {
@@ -200,7 +232,7 @@ class _CardScreenState extends State<CardScreen> {
         favorites = [];
       }
     });
-    await wallpaperStorage.getDataList();
+    await wallpaperStorage.restoreData();
   }
 
   Future<void> addToFavorites(Videos item) async {
@@ -321,8 +353,7 @@ class _MyWebViewScreenState extends State<MyWebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool nextBool = Random().nextBool();
-    String url = 'https://a.magsrv.com/iframe.php?idzone=5068348&size=300x250';
+    // String url = 'https://a.magsrv.com/iframe.php?idzone=5068348&size=300x250';
     return Scaffold(
       body: Container(
         color: Colors.black, // Set the background color to black

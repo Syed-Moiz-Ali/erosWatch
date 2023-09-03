@@ -1,4 +1,4 @@
-// ignore_for_file: must_be_immutable, library_private_types_in_public_api
+// ignore_for_file: must_be_immutable, library_private_types_in_public_api, depend_on_referenced_packages
 
 import 'dart:async';
 
@@ -10,7 +10,6 @@ import 'package:flutter/services.dart';
 import 'package:eroswatch/Watch/smiliar.dart';
 import 'package:eroswatch/video_player/video_player_controls.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:http/http.dart' as http;
@@ -63,8 +62,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   double get widthFactor => widthFactorValues[currentWidthFactorIndex];
   double get heightFactor => heightFactorValues[currentHeightFactorIndex];
-  double _initialVolumeDrag = 0; // Initial position of vertical drag
-  double _initialVolume = 0; // Initial volume value
+  // double _initialVolumeDrag = 0; // Initial position of vertical drag
+  // double _initialVolume = 0; // Initial volume value
   double currentVolume = 0;
   bool isSliderVisible = false; // Initial visibility state
   Timer? _sliderTimer; // Timer to hide the slider after a delay
@@ -84,11 +83,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
     _videoPlayerController.play();
     _videoPlayerController.videoPlayerOptions?.webOptions?.controls;
-    VolumeController().listener((volume) {
-      setState(() => _initialVolume = volume);
-    });
+    // VolumeController().listener((volume) {
+    //   setState(() => _initialVolume = volume);
+    // });
 
-    VolumeController().getVolume().then((volume) => currentVolume = volume);
+    // VolumeController().getVolume().then((volume) => currentVolume = volume);
   }
 
   Future<void> fetchAndParseVastXml() async {
@@ -131,41 +130,41 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
   }
 
-  void _onVerticalVolumeDragStart(DragStartDetails details) async {
-    _initialVolumeDrag = details.localPosition.dy;
-    _initialVolume = await VolumeController().getVolume();
-  }
+  // void _onVerticalVolumeDragStart(DragStartDetails details) async {
+  //   _initialVolumeDrag = details.localPosition.dy;
+  //   _initialVolume = await VolumeController().getVolume();
+  // }
 
-  void _onVerticalVolumeDragUpdate(DragUpdateDetails details) {
-    setState(() {
-      isSliderVisible = true;
-    });
-    _sliderTimer?.cancel();
-    _sliderTimer = Timer(const Duration(seconds: 2), () {
-      setState(() {
-        isSliderVisible = false;
-      });
-    });
-    double deltaY = details.localPosition.dy - _initialVolumeDrag;
-    double maxDeltaY =
-        3000.0; // Adjust this value based on desired sensitivity (higher value for less sensitivity)
+  // void _onVerticalVolumeDragUpdate(DragUpdateDetails details) {
+  //   setState(() {
+  //     isSliderVisible = true;
+  //   });
+  //   _sliderTimer?.cancel();
+  //   _sliderTimer = Timer(const Duration(seconds: 2), () {
+  //     setState(() {
+  //       isSliderVisible = false;
+  //     });
+  //   });
+  //   double deltaY = details.localPosition.dy - _initialVolumeDrag;
+  //   double maxDeltaY =
+  //       3000.0; // Adjust this value based on desired sensitivity (higher value for less sensitivity)
 
-    // Limit deltaY to a maximum value to control sensitivity
-    deltaY = deltaY.clamp(-maxDeltaY, maxDeltaY);
+  //   // Limit deltaY to a maximum value to control sensitivity
+  //   deltaY = deltaY.clamp(-maxDeltaY, maxDeltaY);
 
-    double volumeIncrement =
-        -0.7; // Adjust this value for smoother adjustment (smaller value for smoother)
+  //   double volumeIncrement =
+  //       -0.7; // Adjust this value for smoother adjustment (smaller value for smoother)
 
-    double deltaVolume = deltaY / maxDeltaY * volumeIncrement;
+  //   double deltaVolume = deltaY / maxDeltaY * volumeIncrement;
 
-    double newVolume = _initialVolume + deltaVolume;
-    newVolume = newVolume.clamp(0, 1); // Clamp volume between 0 and 1
+  //   double newVolume = _initialVolume + deltaVolume;
+  //   newVolume = newVolume.clamp(0, 1); // Clamp volume between 0 and 1
 
-    setState(() {
-      currentVolume = newVolume;
-      VolumeController().setVolume(currentVolume);
-    });
-  }
+  //   setState(() {
+  //     currentVolume = newVolume;
+  //     VolumeController().setVolume(currentVolume);
+  //   });
+  // }
 
   void _togglePlayPause() {
     setState(() {
@@ -569,7 +568,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                                 () {
                                   setState(() {
                                     showBackward = false;
-                                    print("showBackward: $showBackward");
+                                    if (kDebugMode) {
+                                      print("showBackward: $showBackward");
+                                    }
                                   });
                                 },
                               );
@@ -592,7 +593,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                                 () {
                                   setState(() {
                                     showForward = false;
-                                    print("showForward: $showForward");
+                                    if (kDebugMode) {
+                                      print("showForward: $showForward");
+                                    }
                                   });
                                 },
                               );
