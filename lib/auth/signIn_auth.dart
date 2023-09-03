@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, file_names
 import 'dart:math';
 
 import 'package:eroswatch/components/inapp_update.dart';
@@ -120,7 +120,9 @@ class _SignInAuthPageState extends State<SignInAuthPage> {
       //   ),
       // );
     } catch (error) {
-      print('Error:$error');
+      if (kDebugMode) {
+        print('Error:$error');
+      }
       // Handle any errors that occurred during sign in
     }
     setState(() {

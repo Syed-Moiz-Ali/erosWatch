@@ -1,11 +1,8 @@
 // ignore_for_file: library_private_types_in_public_api
 
-import 'dart:convert';
-
 import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/helper/videos.dart';
 
 import 'package:eroswatch/model/pages/favorites/fav_card.dart';
@@ -23,16 +20,43 @@ class _FavScreenState extends State<FavScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final channels = channelsStorage.getDataList();
+    final stars = starsStorage.getDataList();
+    final videos = videosStorage.getDataList();
     return Container(
       color: Colors.white,
       child: Stack(
         children: [
-          FavCard(
-            type: _selectedType,
-            getChannelsWallpapers: channelsStorage.restoreData(),
-            getStarsWallpapers: starsStorage.restoreData(),
-            getVideosWallpapers: videosStorage.restoreData(),
-            key: _pageKey,
+          FutureBuilder(
+            future: _getSelectedList(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                ); // Show a loading indicator while loading data
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                      'Error: ${snapshot.error}'), // Show an error message if data loading fails
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No $_selectedType favorites found',
+                    style: const TextStyle(
+                        fontSize: 19, fontWeight: FontWeight.w600),
+                  ), // Show a message when the list is empty
+                );
+              } else {
+                return FavCard(
+                  type: _selectedType,
+                  getChannelsWallpapers: channels,
+                  getStarsWallpapers: stars,
+                  getVideosWallpapers: videos,
+                  key: _pageKey,
+                );
+              }
+            },
           ),
           Positioned(
             bottom: 80.0,
@@ -97,6 +121,16 @@ class _FavScreenState extends State<FavScreen> {
         }
       }
     });
+  }
+
+  Future<List<dynamic>> _getSelectedList() {
+    if (_selectedType == 'channels') {
+      return channelsStorage.getDataList();
+    } else if (_selectedType == 'stars') {
+      return starsStorage.getDataList();
+    } else {
+      return videosStorage.getDataList();
+    }
   }
 
   Widget _buildTab(int index, IconData icon, String title) {

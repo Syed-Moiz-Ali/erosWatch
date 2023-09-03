@@ -44,7 +44,7 @@ class _CardScreenState extends State<CardScreen> {
   @override
   void initState() {
     super.initState();
-    wallpaperStorage.restoreData().then((value) => loadFavorites());
+    loadFavorites();
     subscribe();
   }
 
@@ -220,19 +220,14 @@ class _CardScreenState extends State<CardScreen> {
   }
 
   void loadFavorites() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final jsonStringList = prefs.getStringList('favorites');
+    final jsonStringList = await wallpaperStorage.getDataList();
     setState(() {
       if (jsonStringList != null) {
-        favorites = jsonStringList.map((jsonString) {
-          final dynamic jsonData = jsonDecode(jsonString);
-          return Videos.fromJson(jsonData);
-        }).toList();
+        favorites = jsonStringList;
       } else {
         favorites = [];
       }
     });
-    await wallpaperStorage.restoreData();
   }
 
   Future<void> addToFavorites(Videos item) async {

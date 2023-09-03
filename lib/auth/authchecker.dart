@@ -1,11 +1,9 @@
 import 'package:eroswatch/auth/signIn_auth.dart';
-import 'package:eroswatch/components/inapp_update.dart';
 import 'package:eroswatch/helper/localauth.dart';
 import 'package:eroswatch/services/appwrite.dart';
 import 'package:eroswatch/videos_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthChecker extends StatefulWidget {
   const AuthChecker({super.key});

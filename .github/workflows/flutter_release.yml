@@ -29,14 +29,14 @@ jobs:
 
       - name: Update pubspec.yaml with version
         run: |
-          sed -i.bak "s/version:.*/version: '1.0.3'/" pubspec.yaml
+          sed -i.bak "s/version:.*/version: '1.0.2'/" pubspec.yaml
         shell: bash
       
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v1
         with:
-          flutter-version: "3.10.5" # Specify your desired Flutter version
+          flutter-version: "3.13.2" # Specify your desired Flutter version
 
       - name: Flutter pub get
         run: flutter pub get
@@ -49,5 +49,5 @@ jobs:
         with:
           artifacts: "build/app/outputs/apk/release/*"
           prerelease: false
-          tag: "v1.0.3" # Use the extracted version
+          tag: "v1.0.2" # Use the extracted version
           token: ${{ secrets.TOKEN }}

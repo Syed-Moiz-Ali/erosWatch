@@ -178,22 +178,14 @@ class _CardScreenState extends State<StarCard> {
   }
 
   void loadFavorites() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final jsonStringList = prefs.getStringList('favoriteStars');
+    final jsonStringList = await wallpaperStorage.getDataList();
     setState(() {
       if (jsonStringList != null) {
-        favorites = jsonStringList
-            .map((jsonString) {
-              final dynamic jsonData = jsonDecode(jsonString);
-              return Stars.fromJson(jsonData);
-            })
-            .cast<Stars>()
-            .toList();
+        favorites = jsonStringList;
       } else {
         favorites = [];
       }
     });
-    await wallpaperStorage.restoreData();
   }
 
   Future<void> addToFavorites(Stars item) async {

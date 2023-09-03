@@ -124,7 +124,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
     await account
         .createVerification(
-      url: 'https://appwrite.io/',
+      url: 'https://cloud.appwrite.io/v1',
     )
         .then((response) {
       if (kDebugMode) {
@@ -230,30 +230,23 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   void _launchEmailApp(String toEmail) async {
-    final emailUri = Uri(
-      scheme: 'mailto',
-      path: toEmail,
-    );
+    String email = Uri.encodeComponent("shinten812@gmail.com");
 
-    final emailUrl = emailUri.toString();
-
-    if (await canLaunchUrl(emailUri)) {
-      await launchUrl(emailUri);
+    //output: Hello%20Flutter
+    Uri mail = Uri.parse("mailto:$email");
+    if (await launchUrl(mail)) {
+      //email app opened
+      if (kDebugMode) {
+        print('Gmail app is launched');
+      }
     } else {
       // Handle the case where launching the email app is not supported
       // Provide an alternative option, e.g., opening a web-based email service
-      const webMailUrl = 'https://mail.google.com';
-
-      if (await canLaunchUrl(Uri.parse(webMailUrl))) {
-        await launchUrl(Uri.parse(webMailUrl));
-      } else {
-        // Handle the case where opening a web-based email service is not supported
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Email service is not available on this device.'),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Eamil device not found.'),
+        ),
+      );
     }
   }
 

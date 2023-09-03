@@ -29,9 +29,9 @@ class FavCard extends StatefulWidget {
 
 class _FavCardState extends State<FavCard> {
   FilterOption _currentFilter = FilterOption.newest; // Initial filter
-  late List<Videos> favVideos = [];
-  late List<Stars> favStars = [];
-  late List<Channels> favChannels = [];
+  List<Videos> favoriteVideos = [];
+  List<Stars> favoriteStars = [];
+  List<Channels> favoriteChannels = [];
   bool _showLoadingIndicator = true;
 
   @override
@@ -40,27 +40,27 @@ class _FavCardState extends State<FavCard> {
     _startTimer(); // Start the timer when the widget is created
   }
 
-  Future loadFavorites() async {
-    final favVideo = await widget.getVideosWallpapers;
-    final favStar = await widget.getStarsWallpapers;
-    final favChannel = await widget.getChannelsWallpapers;
+  // Future loadFavorites() async {
+  //   final favVideo = await widget.getVideosWallpapers;
+  //   final favStar = await widget.getStarsWallpapers;
+  //   final favChannel = await widget.getChannelsWallpapers;
 
-    setState(() {
-      if (widget.type == 'stars') {
-        favStars = favStar;
-      } else if (widget.type == 'channels') {
-        favChannels = favChannel;
-      } else {
-        favVideos = favVideo;
-      }
-    });
+  //   setState(() {
+  //     if (widget.type == 'stars') {
+  //       favStars = favStar;
+  //     } else if (widget.type == 'channels') {
+  //       favChannels = favChannel;
+  //     } else {
+  //       favVideos = favVideo;
+  //     }
+  //   });
 
-    return widget.type == 'stars'
-        ? favStar
-        : widget.type == 'channels'
-            ? favChannel
-            : favVideo;
-  }
+  //   return widget.type == 'stars'
+  //       ? favStar
+  //       : widget.type == 'channels'
+  //           ? favChannel
+  //           : favVideo;
+  // }
 
   void _startTimer() {
     // Wait for 3 seconds and then update the loading indicator visibility
@@ -78,13 +78,10 @@ class _FavCardState extends State<FavCard> {
           ? widget.getStarsWallpapers
           : widget.type == 'channels'
               ? widget.getChannelsWallpapers
-              : widget.getVideosWallpapers.then((value) => loadFavorites()),
+              : widget.getVideosWallpapers,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           // Declare separate lists for different types
-          List<Videos> favoriteVideos = [];
-          List<Stars> favoriteStars = [];
-          List<Channels> favoriteChannels = [];
 
           if (widget.type == 'stars') {
             favoriteStars = snapshot.data! as List<Stars>;

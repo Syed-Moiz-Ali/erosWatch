@@ -188,22 +188,14 @@ class _ChannelScreenState extends State<ChannelCard> {
   }
 
   void loadFavorites() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final jsonStringList = prefs.getStringList('favoriteChannels');
+    final jsonStringList = await wallpaperStorage.getDataList();
     setState(() {
       if (jsonStringList != null) {
-        favorites = jsonStringList
-            .map((jsonString) {
-              final dynamic jsonData = jsonDecode(jsonString);
-              return Channels.fromJson(jsonData);
-            })
-            .cast<Channels>()
-            .toList();
+        favorites = jsonStringList;
       } else {
         favorites = [];
       }
     });
-    await wallpaperStorage.restoreData();
   }
 
   Future<void> addToFavorites(Channels item) async {

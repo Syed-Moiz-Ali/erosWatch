@@ -87,31 +87,57 @@ class WallpaperStorage<T> {
   });
 
   Future<void> storeData(T data) async {
-    final prefs = await SharedPreferences.getInstance();
+    if (kDebugMode) {
+      print('Storing data...');
+    }
     final dataList = await getDataList();
 
     dataList.add(data);
 
-    await prefs.setStringList(
-        storageKey, dataList.map((e) => jsonEncode(toJson(e))).toList());
+    // await prefs.setStringList(
+    //     storageKey, dataList.map((e) => jsonEncode(toJson(e))).toList());
     await backupData(storageKey, dataList);
+    if (kDebugMode) {
+      print('Data stored.');
+    }
   }
 
   Future<List<T>> getDataList() async {
-    final prefs = await SharedPreferences.getInstance();
-    final dataList = prefs.getStringList(storageKey) ?? [];
+    if (kDebugMode) {
+      print('Getting data list...');
+    }
+    // Implement your logic to fetch data from Appwrite or external storage here.
+    // Example: Fetch data from Appwrite storage or external storage directory.
+    final externalDir = await getExternalStorageDirectory();
+    final filePath = '${externalDir!.path}/$storageKey.json';
+    final file = File(filePath);
 
-    return dataList.map((e) => fromJson(jsonDecode(e))).toList();
+    if (await file.exists()) {
+      final dataAsString = await file.readAsString();
+      final decodedData = jsonDecode(dataAsString) as List<dynamic>;
+
+      if (kDebugMode) {
+        print('Data retrieved.');
+      }
+      return decodedData.map((json) => fromJson(json)).cast<T>().toList();
+    } else {
+      if (kDebugMode) {
+        print('Data not found. Restoring...');
+      }
+      return restoreData();
+    }
   }
 
 // Backup data in version 1.0.2
   Future<void> backupData(String key, List<T> dataList) async {
+    if (kDebugMode) {
+      print('Backing up data...');
+    }
     final externalDir = await getExternalStorageDirectory();
     final filePath = '${externalDir!.path}/$key.json';
     final file = File(filePath);
 
     if (!await file.exists()) {
-      // await file.delete();
       await file.create();
     }
 
@@ -182,10 +208,14 @@ class WallpaperStorage<T> {
           }
         }
       }
+      if (kDebugMode) {
+        print('Data backed up successfully.');
+      }
     } catch (e) {
       if (kDebugMode) {
         print('Error backing up data: $e');
       }
+      // Handle the error as needed (e.g., log, display an error message).
     }
   }
 
@@ -243,13 +273,16 @@ class WallpaperStorage<T> {
         return decodedData.map((json) => fromJson(json)).cast<T>().toList();
       }
     } catch (e) {
-      print('Error restoring data: $e');
+      if (kDebugMode) {
+        print('Error restoring data: $e');
+      }
     }
 
     return [];
   }
 
   Future<void> removeData(String dataId) async {
+    print('Removing data...');
     final prefs = await SharedPreferences.getInstance();
     final dataList = await restoreData();
 
@@ -268,5 +301,6 @@ class WallpaperStorage<T> {
     await prefs.setStringList(
         storageKey, dataList.map((e) => jsonEncode(toJson(e))).toList());
     await backupData(storageKey, dataList);
+    print('Data removed.');
   }
 }
