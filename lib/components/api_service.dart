@@ -346,8 +346,8 @@ class ImageComponent extends StatelessWidget {
 
     // const errorImage =
     // //     'https://dicdn.bigfuck.tv/Qbc_5-9LHHJQijmVZSAKSkjuET8-WEVK52UdxGdxXGs/rs:fill:360:506/crop:0:0.90:no/enlarge:1/wm:1:nowe:0:0:1/Swmu:aHR0cHM6Ly9jZG42OTY5NjE2NC5haGFjZG4ubWUvcG9ybnN0YXJfYXZhdGFyX3dhdGVybWFyay5wbmc=/aHR0cHM6Ly9pY2RuMDUuYmlnZnVjay50di9wb3Juc3Rhci84NDAvMTU2YTQ4NjlkMDhlZTBiODY0ZDlmMGEwNWY3MmE4ZWIuanBn.webp';
-    const image =
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSsLWVn6ZOrtsgl4lhc4C9DnRGk8ituA04w&usqp=CAU";
+    // const image =
+    //     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnSsLWVn6ZOrtsgl4lhc4C9DnRGk8ituA04w&usqp=CAU";
     return Stack(
       children: [
         Hero(
@@ -356,7 +356,7 @@ class ImageComponent extends StatelessWidget {
             borderRadius:
                 BorderRadius.circular(title == 'channel' ? 1200000 : 8.0),
             child: CachedNetworkImage(
-              imageUrl: image,
+              imageUrl: imagePath,
               fit: BoxFit.cover,
               height: title == 'star'
                   ? 300
