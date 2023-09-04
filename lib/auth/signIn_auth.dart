@@ -78,13 +78,11 @@ class _SignInAuthPageState extends State<SignInAuthPage> {
           'password': password,
           'name': name,
         },
-      ).then((value) => {
-            setState(() {
-              _selectedIndex = 0;
-              isSignUp = true;
-            }),
-          });
-
+      );
+      setState(() {
+        _selectedIndex = 0;
+        isSignUp = true;
+      });
       // ignore: use_build_context_synchronously
     } catch (error) {
       if (kDebugMode) {
@@ -102,9 +100,6 @@ class _SignInAuthPageState extends State<SignInAuthPage> {
       await account
           .createEmailSession(email: email, password: password)
           .then((value) => {
-                setState(() {
-                  isLogin = true;
-                }),
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -112,7 +107,9 @@ class _SignInAuthPageState extends State<SignInAuthPage> {
                   ),
                 )
               });
-
+      setState(() {
+        isLogin = true;
+      });
       // Navigator.push<void>(
       //   context,
       //   MaterialPageRoute<void>(

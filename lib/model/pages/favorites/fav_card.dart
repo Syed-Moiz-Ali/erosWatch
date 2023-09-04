@@ -72,6 +72,11 @@ class _FavCardState extends State<FavCard> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: widget.type == 'stars'

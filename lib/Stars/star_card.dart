@@ -34,16 +34,26 @@ class _CardScreenState extends State<StarCard> {
   bool changeOnTap = true;
   // final Map<int, bool> _isPlayingMap =
   //     {};
-  final wallpaperStorage = WallpaperStorage<Stars>(
-    storageKey: 'favoriteStars',
-    fromJson: (json) => Stars.fromJson(json),
-    toJson: (videos) => videos.toJson(),
-  );
+  late WallpaperStorage<Stars> wallpaperStorage;
+
   @override
   void initState() {
     super.initState();
-    loadFavorites();
+    initializing().then(
+      (value) => loadFavorites(),
+    );
     // _isPlaying = false;
+  }
+
+  Future<void> initializing() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      wallpaperStorage = WallpaperStorage<Stars>(
+          storageKey: 'favoriteStars',
+          fromJson: (json) => Stars.fromJson(json),
+          toJson: (videos) => videos.toJson(),
+          prefs: prefs);
+    });
   }
 
   void handleClickButton(
@@ -191,11 +201,11 @@ class _CardScreenState extends State<StarCard> {
   Future<void> addToFavorites(Stars item) async {
     Stars stars = item;
     favorites.add(item);
-    await wallpaperStorage.storeData(stars);
+    await wallpaperStorage.storeData(stars, context);
   }
 
   Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id);
+    await wallpaperStorage.removeData(id, context);
   }
 
   void showRemoveDialog(BuildContext context, Stars item) {

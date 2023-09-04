@@ -1,4 +1,5 @@
 import 'package:eroswatch/model/pages/setting_page.dart';
+import 'package:eroswatch/services/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,6 +33,7 @@ class _VideoScreenState extends State<VideoScreen>
   @override
   void initState() {
     super.initState();
+    setUserDetails();
     _scrollController.addListener(() {
       setState(() {});
     });
@@ -40,6 +42,14 @@ class _VideoScreenState extends State<VideoScreen>
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+  }
+
+  Future<void> setUserDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    final promise = await account.get();
+    await prefs.setString('userEmail', promise.email);
+    await prefs.setString('userName', promise.name);
+    print('userDetails has been set sucessfully');
   }
 
   @override

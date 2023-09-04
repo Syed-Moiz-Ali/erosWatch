@@ -34,16 +34,25 @@ class _CardScreenState extends State<SimilarCard> {
   //     {};
   int _currentPlayingIndex = -1;
   bool changeOnTap = false;
-  final wallpaperStorage = WallpaperStorage<Videos>(
-    storageKey: 'favorites',
-    fromJson: (json) => Videos.fromJson(json),
-    toJson: (videos) => videos.toJson(),
-  );
+  late final WallpaperStorage<Videos> wallpaperStorage;
+
   @override
   void initState() {
     super.initState();
+    initializing().then(
+      (value) => loadFavorites(),
+    );
+  }
 
-    wallpaperStorage.restoreData().then((value) => loadFavorites());
+  Future<void> initializing() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      wallpaperStorage = WallpaperStorage<Videos>(
+          storageKey: 'favorites',
+          fromJson: (json) => Videos.fromJson(json),
+          toJson: (videos) => videos.toJson(),
+          prefs: prefs);
+    });
   }
 
   text(String text) {
@@ -90,7 +99,7 @@ class _CardScreenState extends State<SimilarCard> {
         }
 
         final Videos videos = filteredContent[index];
-        final newImage = videos.image;
+        final newImage = videos.image.trim();
         // print(videos.preview);
         bool isPlaying = index == _currentPlayingIndex;
         return GestureDetector(
@@ -192,29 +201,24 @@ class _CardScreenState extends State<SimilarCard> {
   }
 
   void loadFavorites() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final jsonStringList = prefs.getStringList('favorites');
+    final jsonStringList = await wallpaperStorage.getDataList();
     setState(() {
       if (jsonStringList != null) {
-        favorites = jsonStringList.map((jsonString) {
-          final dynamic jsonData = jsonDecode(jsonString);
-          return Videos.fromJson(jsonData);
-        }).toList();
+        favorites = jsonStringList;
       } else {
         favorites = [];
       }
     });
-    await wallpaperStorage.restoreData();
   }
 
   Future<void> addToFavorites(Videos item) async {
     Videos videos = item;
     favorites.add(item);
-    await wallpaperStorage.storeData(videos);
+    await wallpaperStorage.storeData(videos, context);
   }
 
   Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id);
+    await wallpaperStorage.removeData(id, context);
   }
 
   void showRemoveDialog(BuildContext context, Videos item) {

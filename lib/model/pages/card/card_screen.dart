@@ -1,7 +1,6 @@
 // import 'dart:html';
 // ignore_for_file: must_be_immutable, library_private_types_in_public_api
 
-import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
 import 'package:eroswatch/services/appwrite.dart';
 import 'package:flutter/foundation.dart';
@@ -33,19 +32,31 @@ class _CardScreenState extends State<CardScreen> {
   List<Videos> favorites = [];
   bool changeOnTap = true;
   // final Map<int, bool> _isPlayingMap =
-  //     {};
-  final wallpaperStorage = WallpaperStorage<Videos>(
-    storageKey: 'favorites',
-    fromJson: (json) => Videos.fromJson(json),
-    toJson: (videos) => videos.toJson(),
-  );
   late RealtimeSubscription subscribtion;
   int _currentPlayingIndex = -1;
+  //     {};
+  late final WallpaperStorage<Videos> wallpaperStorage;
+
   @override
   void initState() {
     super.initState();
-    loadFavorites();
+    initializing().then(
+      (value) => loadFavorites(),
+    );
+
     subscribe();
+  }
+
+  Future<void> initializing() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newData = WallpaperStorage<Videos>(
+        storageKey: 'favorites',
+        fromJson: (json) => Videos.fromJson(json),
+        toJson: (videos) => videos.toJson(),
+        prefs: prefs);
+    setState(() {
+      wallpaperStorage = newData;
+    });
   }
 
   void subscribe() {
@@ -76,7 +87,7 @@ class _CardScreenState extends State<CardScreen> {
       //     date: data['date'],
       //   );
       // }).toList();
-      wallpaperStorage.restoreData();
+      wallpaperStorage.getDataList();
     });
   }
 
@@ -221,23 +232,24 @@ class _CardScreenState extends State<CardScreen> {
 
   void loadFavorites() async {
     final jsonStringList = await wallpaperStorage.getDataList();
+    await wallpaperStorage.restoreData();
     setState(() {
-      if (jsonStringList != null) {
-        favorites = jsonStringList;
-      } else {
-        favorites = [];
-      }
+      favorites = jsonStringList;
     });
   }
 
   Future<void> addToFavorites(Videos item) async {
     Videos videos = item;
     favorites.add(item);
-    await wallpaperStorage.storeData(videos);
+    await wallpaperStorage.storeData(videos, context).then(
+          (_) => loadFavorites(),
+        );
   }
 
   Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id);
+    await wallpaperStorage.removeData(id, context).then(
+          (_) => loadFavorites(),
+        );
   }
 
   void showRemoveDialog(BuildContext context, Videos item) {

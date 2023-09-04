@@ -57,15 +57,6 @@ class _MyPageSate extends State<PageScreen> {
     futureWallpapers = apiService.fetchWallpapers(pageNumber);
     fetchWallpapers();
     fetchAndParseVastXml();
-    Future.delayed(const Duration(seconds: 5), () {
-      setState(() {
-        showAd = true;
-      });
-    }).then((_) => Future.delayed(const Duration(minutes: 5), () {
-          setState(() {
-            showAd = true;
-          });
-        }));
   }
 
   Future<void> fetchAndParseVastXml() async {
@@ -219,7 +210,6 @@ class _MyPageSate extends State<PageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final double screenWidth = MediaQuery.of(context).size.width;
     // double screenWidth = MediaQuery.of(context).size.width;
     // double screenHeight = MediaQuery.of(context).size.height;
     return NotificationListener<ScrollNotification>(
@@ -247,64 +237,64 @@ class _MyPageSate extends State<PageScreen> {
               fetch: fetchDataAndUpdateUI,
             ),
           ),
-          if (showAd)
-            GestureDetector(
-              onTap: () {
-                handleClickButton(context, nonLinearClickThroughUrl);
-              },
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                color: Colors.black45,
-                child: Center(
-                  child: Stack(
-                    children: [
-                      Container(
-                        width: 300,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.grey[400],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            gifUrl,
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      // Positioned(
-                      //   top: 5,
-                      //   right: 5,
-                      //   child: Container(
-                      //     color: Colors.black54,
-                      //     width: 30,
-                      //     height: 30,
-                      //     child: Align(
-                      //       alignment: Alignment.center, // Center the IconButton
-                      //       child: IconButton(
-                      //         icon: const Icon(
-                      //           Icons.close,
-                      //           size: 18,
-                      //           color: Colors.white,
-                      //         ),
-                      //         onPressed: () {
-                      //           setState(() {
-                      //             showAd = false;
-                      //           });
-                      //         },
-                      //       ),
-                      //     ),
-                      //   ),
-                      // )
-                    ],
-                  ),
-                ),
-              ),
-            )
+          // if (showAd)
+          //   GestureDetector(
+          //     onTap: () {
+          //       handleClickButton(context, nonLinearClickThroughUrl);
+          //     },
+          //     child: Container(
+          //       width: MediaQuery.of(context).size.width,
+          //       height: MediaQuery.of(context).size.height,
+          //       color: Colors.black45,
+          //       child: Center(
+          //         child: Stack(
+          //           children: [
+          //             Container(
+          //               width: 300,
+          //               height: 300,
+          //               decoration: BoxDecoration(
+          //                 borderRadius: BorderRadius.circular(12),
+          //                 color: Colors.grey[400],
+          //               ),
+          //               child: ClipRRect(
+          //                 borderRadius: BorderRadius.circular(12),
+          //                 child: Image.network(
+          //                   gifUrl,
+          //                   width: double.infinity,
+          //                   height: double.infinity,
+          //                   fit: BoxFit.cover,
+          //                 ),
+          //               ),
+          //             ),
+          //             // Positioned(
+          //             //   top: 5,
+          //             //   right: 5,
+          //             //   child: Container(
+          //             //     color: Colors.black54,
+          //             //     width: 30,
+          //             //     height: 30,
+          //             //     child: Align(
+          //             //       alignment: Alignment.center, // Center the IconButton
+          //             //       child: IconButton(
+          //             //         icon: const Icon(
+          //             //           Icons.close,
+          //             //           size: 18,
+          //             //           color: Colors.white,
+          //             //         ),
+          //             //         onPressed: () {
+          //             //           setState(() {
+          //             //             showAd = false;
+          //             //           });
+          //             //         },
+          //             //       ),
+          //             //     ),
+          //             //   ),
+          //             // )
+          //           ],
+          //         ),
+          //       ),
+          //     ),
+          //   )
         ],
       ),
     );

@@ -1,7 +1,6 @@
-// ignore_for_file: must_be_immutable, library_private_types_in_public_api, depend_on_referenced_packages
+// ignore_for_file: must_be_immutable, library_private_types_in_public_api, depend_on_referenced_packages, use_build_context_synchronously
 
 import 'dart:async';
-
 import 'dart:math';
 import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:eroswatch/Watch/smiliar.dart';
 import 'package:eroswatch/video_player/video_player_controls.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:http/http.dart' as http;
@@ -88,6 +88,25 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     // });
 
     // VolumeController().getVolume().then((volume) => currentVolume = volume);
+    checkPrefs();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    checkAndResetShowAd();
+  }
+
+  Future<void> checkPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('showAdTimestamp', DateTime.now().millisecondsSinceEpoch);
+    setState(() {
+      showAd = prefs.getBool('showAd') ?? true;
+    });
+    if (kDebugMode) {
+      print('checkPrefsShowAd: $showAd');
+    }
+    // Save 'showAd' to shared preferences
   }
 
   Future<void> fetchAndParseVastXml() async {
@@ -395,20 +414,42 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
   }
 
-  void handleClickButton(
-      BuildContext context, String nonLinearClickThroughUrl) {
+  Future<void> handleClickButton(
+      BuildContext context, String nonLinearClickThroughUrl) async {
     // launchUrl(
     //   Uri.parse(nonLinearClickThroughUrl.trim()),
     // );
+    final prefs = await SharedPreferences.getInstance();
     inVideoAddLaunch(context, browser, nonLinearClickThroughUrl);
-
+    await prefs.setBool('showAd', false);
     setState(() {
       if (_videoPlayerController.value.isPlaying) {
         _videoPlayerController.pause();
       }
-      showAd = false; // Set showAd to false when the button is clicked
+      showAd = prefs
+          .getBool('showAd')!; // Set showAd to false when the button is clicked
     });
     // Start a timer to reset showAd to true after 5 minutes
+    if (kDebugMode) {
+      print('handleShowAd: $showAd');
+    }
+  }
+
+  Future<void> checkAndResetShowAd() async {
+    final prefs = await SharedPreferences.getInstance();
+    final showAdTimestamp = prefs.getInt('showAdTimestamp') ?? 0;
+    final currentTime = DateTime.now().millisecondsSinceEpoch;
+
+    if (showAdTimestamp == 0 ||
+        currentTime - showAdTimestamp >= (20 * 60 * 1000)) {
+      await prefs.setBool('showAd', true);
+      setState(() {
+        showAd = true;
+      });
+      if (kDebugMode) {
+        print('checkResetShowAd: $showAd');
+      }
+    }
   }
 
   @override
@@ -524,7 +565,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                         child: const Center(
                           child: Icon(
                             Icons.replay_10_rounded,
-                            size: 70,
+                            size: 30,
                             color: Colors.white,
                           ),
                         ),
@@ -542,7 +583,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                         child: const Center(
                           child: Icon(
                             Icons.forward_10_rounded,
-                            size: 70,
+                            size: 30,
                             color: Colors.white,
                           ),
                         ),

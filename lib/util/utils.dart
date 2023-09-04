@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -75,27 +77,50 @@ Future<void> inVideoAddLaunch(
   );
 }
 
+// Future<String> getAccountDetail() async {
+//   final prefs = await SharedPreferences.getInstance();
+//   final promise = await account.get();
+//   prefs.setString('userEmail', promise.email)
+//   prefs.setString('userName', promise.name)
+//   return promise.email;
+// }
+
 class WallpaperStorage<T> {
   final String storageKey;
   final T Function(Map<String, dynamic>) fromJson;
   final Map<String, dynamic> Function(T) toJson;
+  final SharedPreferences prefs;
 
   WallpaperStorage({
     required this.storageKey,
     required this.fromJson,
     required this.toJson,
+    required this.prefs,
   });
+  Future<String?> getEmail() async {
+    return prefs.getString('userEmail');
+  }
 
-  Future<void> storeData(T data) async {
+  Future<String?> getName() async {
+    return prefs.getString('userName');
+  }
+
+  Future<void> storeData(T data, context) async {
     if (kDebugMode) {
       print('Storing data...');
     }
     final dataList = await getDataList();
 
     dataList.add(data);
-
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Added Successfully In Favorites'),
+        duration: Duration(seconds: 2),
+      ),
+    );
     // await prefs.setStringList(
     //     storageKey, dataList.map((e) => jsonEncode(toJson(e))).toList());
+
     await backupData(storageKey, dataList);
     if (kDebugMode) {
       print('Data stored.');
@@ -106,10 +131,10 @@ class WallpaperStorage<T> {
     if (kDebugMode) {
       print('Getting data list...');
     }
-    // Implement your logic to fetch data from Appwrite or external storage here.
-    // Example: Fetch data from Appwrite storage or external storage directory.
+
+    final email = await getEmail();
     final externalDir = await getExternalStorageDirectory();
-    final filePath = '${externalDir!.path}/$storageKey.json';
+    final filePath = '${externalDir!.path}/$email-$storageKey.json';
     final file = File(filePath);
 
     if (await file.exists()) {
@@ -120,12 +145,10 @@ class WallpaperStorage<T> {
         print('Data retrieved.');
       }
       return decodedData.map((json) => fromJson(json)).cast<T>().toList();
-    } else {
-      if (kDebugMode) {
-        print('Data not found. Restoring...');
-      }
-      return restoreData();
     }
+
+    // Data doesn't exist, return an empty list
+    return [];
   }
 
 // Backup data in version 1.0.2
@@ -133,8 +156,11 @@ class WallpaperStorage<T> {
     if (kDebugMode) {
       print('Backing up data...');
     }
+    // final externalDir =externalDirectory.then((value) => value!.path);
+    final email = await getEmail();
+    final name = await getName();
     final externalDir = await getExternalStorageDirectory();
-    final filePath = '${externalDir!.path}/$key.json';
+    final filePath = '${externalDir!.path}/$email-$key.json';
     final file = File(filePath);
 
     if (!await file.exists()) {
@@ -142,14 +168,13 @@ class WallpaperStorage<T> {
     }
 
     final fileData = jsonEncode(dataList.map((data) => toJson(data)).toList());
-    final promise = await account.get();
 
     await file.writeAsString(fileData);
 
     try {
       final fileMultipartFile = InputFile.fromPath(
         path: file.path,
-        filename: '$key.json',
+        filename: '$email-$key.json',
         contentType: 'application/json',
       );
 
@@ -157,8 +182,8 @@ class WallpaperStorage<T> {
         databaseId: '64f38d70472988fd536c',
         collectionId: '64f3ad4397e3c3b29210',
         queries: [
-          Query.equal('name', promise.name),
-          Query.equal('email', promise.email),
+          Query.equal('name', name),
+          Query.equal('email', email),
           Query.equal('type', key),
         ],
       );
@@ -175,8 +200,8 @@ class WallpaperStorage<T> {
           collectionId: '64f3ad4397e3c3b29210',
           documentId: uniqueId,
           data: {
-            'name': promise.name,
-            'email': promise.email,
+            'name': name,
+            'email': email,
             'type': key,
             'fileId': fileDetails.$id,
           },
@@ -194,6 +219,7 @@ class WallpaperStorage<T> {
           //   bucketId: '64f3a92c7ab086900e74',
           //   fileId: documentId,
           // );
+
           await storage.deleteFile(
             bucketId: '64f3a92c7ab086900e74',
             fileId: documentId,
@@ -203,6 +229,7 @@ class WallpaperStorage<T> {
             bucketId: '64f3a92c7ab086900e74',
             fileId: documentId, // Generate a unique ID
           );
+
           if (kDebugMode) {
             print('File updated with file ID: $documentId');
           }
@@ -221,16 +248,19 @@ class WallpaperStorage<T> {
 
   Future<List<T>> restoreData() async {
     try {
+      final email = await getEmail();
+      final name = await getName();
       final externalDir = await getExternalStorageDirectory();
-      final promise = await account.get();
-      final file = File('${externalDir!.path}/$storageKey.json');
+      final filePath = '${externalDir!.path}/$email-$storageKey.json';
+      final file = File(filePath);
+
       if (!await file.exists()) {
         final documentQuery = await database.listDocuments(
           databaseId: '64f38d70472988fd536c',
           collectionId: '64f3ad4397e3c3b29210',
           queries: [
-            Query.equal('name', promise.name),
-            Query.equal('email', promise.email),
+            Query.equal('name', name),
+            Query.equal('email', email),
             Query.equal('type', storageKey),
           ],
         );
@@ -252,7 +282,7 @@ class WallpaperStorage<T> {
                 fileId: fileId,
               );
 
-              final file = File('${externalDir.path}/$storageKey.json');
+              final file = File(filePath);
               await file.writeAsBytes(response);
               final dataAsString = await file.readAsString();
               final decodedData = jsonDecode(dataAsString) as List<dynamic>;
@@ -281,10 +311,12 @@ class WallpaperStorage<T> {
     return [];
   }
 
-  Future<void> removeData(String dataId) async {
-    print('Removing data...');
-    final prefs = await SharedPreferences.getInstance();
-    final dataList = await restoreData();
+  Future<void> removeData(String dataId, BuildContext context) async {
+    if (kDebugMode) {
+      print('Removing data...');
+    }
+
+    final dataList = await getDataList();
 
     dataList.removeWhere((data) {
       // final item = fromJson(jsonDecode(data as String));
@@ -300,7 +332,16 @@ class WallpaperStorage<T> {
 
     await prefs.setStringList(
         storageKey, dataList.map((e) => jsonEncode(toJson(e))).toList());
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Removed Successfully From Favorites'),
+        duration: Duration(seconds: 2),
+      ),
+    );
     await backupData(storageKey, dataList);
-    print('Data removed.');
+
+    if (kDebugMode) {
+      print('Data removed.');
+    }
   }
 }

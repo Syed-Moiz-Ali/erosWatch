@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:eroswatch/helper/videos.dart';
 
 import 'package:eroswatch/model/pages/favorites/fav_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FavScreen extends StatefulWidget {
   const FavScreen({Key? key}) : super(key: key);
@@ -17,77 +18,119 @@ class FavScreen extends StatefulWidget {
 class _FavScreenState extends State<FavScreen> {
   String _selectedType = 'videos';
   Key? _pageKey = UniqueKey();
+  late SharedPreferences prefs;
+  late Future<void> initialization;
 
+  late final WallpaperStorage<Videos> videosStorage;
+  late final WallpaperStorage<Stars> starsStorage;
+  late final WallpaperStorage<Channels> channelsStorage;
   @override
-  Widget build(BuildContext context) {
-    final channels = channelsStorage.getDataList();
-    final stars = starsStorage.getDataList();
-    final videos = videosStorage.getDataList();
-    return Container(
-      color: Colors.white,
-      child: Stack(
-        children: [
-          FutureBuilder(
-            future: _getSelectedList(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                ); // Show a loading indicator while loading data
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text(
-                      'Error: ${snapshot.error}'), // Show an error message if data loading fails
-                );
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(
-                  child: Text(
-                    'No $_selectedType favorites found',
-                    style: const TextStyle(
-                        fontSize: 19, fontWeight: FontWeight.w600),
-                  ), // Show a message when the list is empty
-                );
-              } else {
-                return FavCard(
-                  type: _selectedType,
-                  getChannelsWallpapers: channels,
-                  getStarsWallpapers: stars,
-                  getVideosWallpapers: videos,
-                  key: _pageKey,
-                );
-              }
-            },
-          ),
-          Positioned(
-            bottom: 80.0,
-            right: 25.0,
-            child: FloatingActionButton(
-              onPressed: _openMenu,
-              child: const Icon(Icons.menu),
-            ),
-          ),
-        ],
-      ),
+  void initState() {
+    super.initState();
+    initialization = initializing();
+  }
+
+  Future<void> initializing() async {
+    final pref = await SharedPreferences.getInstance();
+
+    setState(
+      () {
+        prefs = pref;
+        videosStorage = WallpaperStorage<Videos>(
+          storageKey: 'favorites',
+          fromJson: (json) => Videos.fromJson(json),
+          toJson: (data) => data.toJson(),
+          prefs: prefs,
+        );
+
+        starsStorage = WallpaperStorage<Stars>(
+          storageKey: 'favoriteStars',
+          fromJson: (json) => Stars.fromJson(json),
+          toJson: (data) => data.toJson(),
+          prefs: prefs,
+        );
+
+        channelsStorage = WallpaperStorage<Channels>(
+          storageKey: 'favoriteChannels',
+          fromJson: (json) => Channels.fromJson(json),
+          toJson: (data) => data.toJson(),
+          prefs: prefs,
+        );
+      },
     );
   }
 
-  final videosStorage = WallpaperStorage<Videos>(
-    storageKey: 'favorites', // Use a unique key for each data type
-    fromJson: (json) => Videos.fromJson(json),
-    toJson: (data) => data.toJson(),
-  );
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: initialization,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: SizedBox(
+              height: 50,
+              width: 50,
+              child: CircularProgressIndicator(),
+            ),
+          ); // Show a loading indicator while initializing
+        } else if (snapshot.hasError) {
+          return Center(
+            child: SizedBox(
+                height: 50, width: 50, child: Text('Error: ${snapshot.error}')),
+          ); // Show an error message if initialization fails
+        }
 
-  final starsStorage = WallpaperStorage<Stars>(
-    storageKey: 'favoriteStars',
-    fromJson: (json) => Stars.fromJson(json),
-    toJson: (data) => data.toJson(),
-  );
+        // Initialization is completed, build the widget
+        final channels = channelsStorage.getDataList();
+        final stars = starsStorage.getDataList();
+        final videos = videosStorage.getDataList();
 
-  final channelsStorage = WallpaperStorage<Channels>(
-    storageKey: 'favoriteChannels',
-    fromJson: (json) => Channels.fromJson(json),
-    toJson: (data) => data.toJson(),
-  );
+        return Stack(
+          children: [
+            FutureBuilder(
+              future: _getSelectedList(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  ); // Show a loading indicator while loading data
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                        'Error: ${snapshot.error}'), // Show an error message if data loading fails
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No $_selectedType favorites found',
+                      style: const TextStyle(
+                          fontSize: 19, fontWeight: FontWeight.w600),
+                    ),
+                  );
+                } else {
+                  return FavCard(
+                    type: _selectedType,
+                    getChannelsWallpapers: channels,
+                    getStarsWallpapers: stars,
+                    getVideosWallpapers: videos,
+                    key: _pageKey,
+                  );
+                }
+              },
+            ),
+            Positioned(
+              bottom: 80.0,
+              right: 25.0,
+              child: FloatingActionButton(
+                onPressed: _openMenu,
+                child: const Icon(Icons.menu),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _openMenu() {
     showModalBottomSheet(
@@ -123,13 +166,14 @@ class _FavScreenState extends State<FavScreen> {
     });
   }
 
-  Future<List<dynamic>> _getSelectedList() {
+  Future<List<dynamic>> _getSelectedList() async {
+    await initialization;
     if (_selectedType == 'channels') {
-      return channelsStorage.getDataList();
+      return await channelsStorage.getDataList();
     } else if (_selectedType == 'stars') {
-      return starsStorage.getDataList();
+      return await starsStorage.getDataList();
     } else {
-      return videosStorage.getDataList();
+      return await videosStorage.getDataList();
     }
   }
 

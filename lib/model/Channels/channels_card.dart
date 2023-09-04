@@ -31,19 +31,29 @@ class ChannelCard extends StatefulWidget {
 
 class _ChannelScreenState extends State<ChannelCard> {
   List<Channels> favorites = [];
+
   final ChromeSafariBrowser browser = ChromeSafariBrowser();
   int _currentPlayingIndex = -1;
   bool changeOnTap = true;
-  final wallpaperStorage = WallpaperStorage<Channels>(
-    storageKey: 'favoriteChannels',
-    fromJson: (json) => Channels.fromJson(json),
-    toJson: (videos) => videos.toJson(),
-  );
+  late final WallpaperStorage<Channels> wallpaperStorage;
   @override
   void initState() {
     super.initState();
-    loadFavorites();
+    initializing().then(
+      (value) => loadFavorites(),
+    );
     // _isPlaying = false;
+  }
+
+  Future<void> initializing() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      wallpaperStorage = WallpaperStorage<Channels>(
+          storageKey: 'favoriteChannels',
+          fromJson: (json) => Channels.fromJson(json),
+          toJson: (videos) => videos.toJson(),
+          prefs: prefs);
+    });
   }
 
   final demoImage =
@@ -201,11 +211,11 @@ class _ChannelScreenState extends State<ChannelCard> {
   Future<void> addToFavorites(Channels item) async {
     Channels channels = item;
     favorites.add(item);
-    await wallpaperStorage.storeData(channels);
+    await wallpaperStorage.storeData(channels, context);
   }
 
   Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id);
+    await wallpaperStorage.removeData(id, context);
   }
 
   void showRemoveDialog(BuildContext context, Channels item) {
