@@ -2,24 +2,25 @@
 
 import 'dart:async';
 
+import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:eroswatch/Stars/star_card.dart';
+import 'package:eroswatch/model/Stars/star_card.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:eroswatch/model/Channels/channels_card.dart';
-import 'package:eroswatch/model/pages/card/card_screen.dart';
+import 'package:eroswatch/model/card/card_screen.dart';
 
 class FavCard extends StatefulWidget {
-  Future<List<Videos>> getVideosWallpapers;
-  Future<List<Stars>> getStarsWallpapers;
-  Future<List<Channels>> getChannelsWallpapers;
+  Future<List<Videos>>? getVideosWallpapers;
+  Future<List<Stars>>? getStarsWallpapers;
+  Future<List<Channels>>? getChannelsWallpapers;
   String type;
 
   FavCard({
     super.key,
-    required this.getVideosWallpapers,
-    required this.getStarsWallpapers,
-    required this.getChannelsWallpapers,
+    this.getVideosWallpapers,
+    this.getStarsWallpapers,
+    this.getChannelsWallpapers,
     required this.type,
   });
 
@@ -33,10 +34,11 @@ class _FavCardState extends State<FavCard> {
   List<Stars> favoriteStars = [];
   List<Channels> favoriteChannels = [];
   bool _showLoadingIndicator = true;
-
+  late final database = ErosWatchDatabase(storageKey: widget.type);
   @override
   void initState() {
     super.initState();
+    _loadData();
     _startTimer(); // Start the timer when the widget is created
   }
 
@@ -71,88 +73,117 @@ class _FavCardState extends State<FavCard> {
     });
   }
 
+  Future<void> _loadData() async {
+    try {
+      List<Videos> videoData;
+      List<Stars> starData;
+      List<Channels> channelData;
+      if (widget.type == 'stars') {
+        starData = await database.getAllStars();
+        favoriteStars = starData;
+      } else if (widget.type == 'channels') {
+        channelData = await database.getAllChannels();
+        favoriteChannels = channelData;
+      } else {
+        videoData = await database.getAllVideos();
+        favoriteVideos = videoData;
+      }
+      setState(() {
+        _showLoadingIndicator = false;
+      });
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error loading data: $error');
+      }
+      setState(() {
+        _showLoadingIndicator = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: widget.type == 'stars'
-          ? widget.getStarsWallpapers
-          : widget.type == 'channels'
-              ? widget.getChannelsWallpapers
-              : widget.getVideosWallpapers,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          // Declare separate lists for different types
-
-          if (widget.type == 'stars') {
-            favoriteStars = snapshot.data! as List<Stars>;
-          } else if (widget.type == 'channels') {
-            favoriteChannels = snapshot.data! as List<Channels>;
-          } else {
-            favoriteVideos = snapshot.data! as List<Videos>;
-          }
-
-          return Container(
-            color: Colors.white,
-            child: Stack(
-              children: [
-                if (widget.type == 'stars')
-                  StarCard(
-                    content: _applyStarsFilter(favoriteStars),
-                  )
-                else if (widget.type == 'channels')
-                  ChannelCard(
-                    content: _applyChannelsFilter(favoriteChannels),
-                  )
-                else
-                  CardScreen(
-                    content: _applyVideosFilter(favoriteVideos),
-                    fav: true,
-                  ),
-                Positioned(
-                  bottom: 80.0,
-                  left: 25.0,
-                  child: FloatingActionButton(
-                    onPressed: _showFilterOptions,
-                    child: const Icon(Icons.filter_list),
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else if (snapshot.hasError) {
-          if (kDebugMode) {
-            print(snapshot.error);
-          }
-          return Text('Error: ${snapshot.error}');
-        } else if (!snapshot.hasData) {
-          if (_showLoadingIndicator) {
-            return const Center(
-              child: SizedBox(
-                height: 30,
-                width: 30,
-                child: CircularProgressIndicator(),
-              ),
-            );
-          } else {
-            return const Center(
-              child: Text(
-                "No Favorites Found",
-                style: TextStyle(fontSize: 20, color: Colors.black),
-              ),
-            );
-          }
-        } else if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } else {
-          return const CircularProgressIndicator();
-        }
+    return RefreshIndicator(
+      triggerMode: RefreshIndicatorTriggerMode.onEdge,
+      onRefresh: () async {
+        await _loadData();
       },
+      child: Container(
+        color: Colors.white,
+        child: _buildContent(),
+      ),
     );
+  }
+
+  Widget _buildContent() {
+    if (widget.type == 'stars') {
+      if (favoriteStars.isEmpty) {
+        return const notFoundWdget();
+      } else {
+        return Stack(
+          children: [
+            StarCard(
+              content: _applyStarsFilter(favoriteStars),
+            ),
+            Positioned(
+              bottom: 80.0,
+              left: 25.0,
+              child: FloatingActionButton(
+                onPressed: _showFilterOptions,
+                child: const Icon(Icons.filter_list),
+              ),
+            ),
+          ],
+        );
+      }
+    } else if (widget.type == 'channels') {
+      if (favoriteChannels.isEmpty) {
+        return const notFoundWdget();
+      } else {
+        return Stack(
+          children: [
+            ChannelCard(
+              content: _applyChannelsFilter(favoriteChannels),
+            ),
+            Positioned(
+              bottom: 80.0,
+              left: 25.0,
+              child: FloatingActionButton(
+                onPressed: _showFilterOptions,
+                child: const Icon(Icons.filter_list),
+              ),
+            ),
+          ],
+        );
+      }
+    } else {
+      if (favoriteVideos.isEmpty) {
+        return const notFoundWdget();
+      } else {
+        return Stack(
+          children: [
+            CardScreen(
+              content: _applyVideosFilter(favoriteVideos),
+              fav: true,
+            ),
+            Positioned(
+              bottom: 80.0,
+              left: 25.0,
+              child: FloatingActionButton(
+                onPressed: _showFilterOptions,
+                child: const Icon(Icons.filter_list),
+              ),
+            ),
+          ],
+        );
+      }
+    }
   }
 
   List<Videos> _applyVideosFilter(List<Videos> favorites) {
@@ -249,6 +280,22 @@ class _FavCardState extends State<FavCard> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class notFoundWdget extends StatelessWidget {
+  const notFoundWdget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text(
+        "No Favorites Found",
+        style: TextStyle(fontSize: 20, color: Colors.black),
       ),
     );
   }

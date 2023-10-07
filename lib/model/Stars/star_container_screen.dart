@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../model/pages/pages.dart';
+import '../pages/pages.dart';
 
 class StarContainer extends StatefulWidget {
   final String passedData;

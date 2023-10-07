@@ -1,15 +1,15 @@
 // ignore_for_file: file_names, library_private_types_in_public_api
 
-import 'dart:convert';
+import 'package:eroswatch/components/smallComponents/image_compoenent.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/util/utils.dart';
-import 'package:eroswatch/video_player/video_player.dart';
-import '../../../components/api_service.dart';
-import '../detail_screen.dart';
+import 'package:eroswatch/Watch/video_player/mini_video_player.dart';
+
+import '../detail/detail_screen.dart';
 
 class SimilarCard extends StatefulWidget {
   final List<Videos> content;
@@ -34,25 +34,12 @@ class _CardScreenState extends State<SimilarCard> {
   //     {};
   int _currentPlayingIndex = -1;
   bool changeOnTap = false;
-  late final WallpaperStorage<Videos> wallpaperStorage;
 
+  final database = ErosWatchDatabase(storageKey: 'videos');
   @override
   void initState() {
     super.initState();
-    initializing().then(
-      (value) => loadFavorites(),
-    );
-  }
-
-  Future<void> initializing() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      wallpaperStorage = WallpaperStorage<Videos>(
-          storageKey: 'favorites',
-          fromJson: (json) => Videos.fromJson(json),
-          toJson: (videos) => videos.toJson(),
-          prefs: prefs);
-    });
+    loadFavorites();
   }
 
   text(String text) {
@@ -110,7 +97,10 @@ class _CardScreenState extends State<SimilarCard> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DetailScreen(id: videos.id),
+                  builder: (context) => DetailScreen(
+                    id: videos.id,
+                    title: videos.title,
+                  ),
                 ),
               ).then((_) {
                 loadFavorites();
@@ -149,6 +139,9 @@ class _CardScreenState extends State<SimilarCard> {
                       child: isPlaying && !newImage.contains('gif')
                           ? CustomVideoPlayer(
                               videoUrl: videos.preview,
+                              isShown: isPlaying && !newImage.contains('gif')
+                                  ? true
+                                  : false,
                             )
                           : ImageComponent(
                               imagePath: newImage, title: videos.title),
@@ -200,25 +193,55 @@ class _CardScreenState extends State<SimilarCard> {
     );
   }
 
-  void loadFavorites() async {
-    final jsonStringList = await wallpaperStorage.getDataList();
-    setState(() {
-      if (jsonStringList != null) {
-        favorites = jsonStringList;
-      } else {
-        favorites = [];
+  void toggleFavorite(Videos item) {
+    if (favorites.any((fav) => fav.id == item.id)) {
+      showRemoveDialog(context, item);
+      if (kDebugMode) {
+        print("removed from favs");
       }
-    });
+    } else {
+      addToFavorites(item);
+      if (kDebugMode) {
+        print("added to favs");
+      }
+    }
+  }
+
+  void loadFavorites() async {
+    try {
+      final favoritesList = await database.getAllVideos();
+      setState(() {
+        favorites = favoritesList;
+      });
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error loading favorites: $e");
+      }
+    }
   }
 
   Future<void> addToFavorites(Videos item) async {
-    Videos videos = item;
-    favorites.add(item);
-    await wallpaperStorage.storeData(videos, context);
+    try {
+      await database.insertVideo(item).then((_) => loadFavorites());
+      loadFavorites();
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error adding to favorites: $e");
+      }
+    }
   }
 
-  Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id, context);
+  Future<void> removeFromFavorites(Videos item) async {
+    try {
+      await database.deleteVideo(item).then((_) => loadFavorites());
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error removing from favorites: $e");
+      }
+    }
   }
 
   void showRemoveDialog(BuildContext context, Videos item) {
@@ -236,9 +259,7 @@ class _CardScreenState extends State<SimilarCard> {
             TextButton(
               onPressed: () {
                 // Perform the remove action
-                removeFromFavorites(item.id).then(
-                  (_) => loadFavorites(),
-                );
+                removeFromFavorites(item);
                 Navigator.of(context)
                     .pop(true); // Return true to indicate remove
               },
@@ -256,23 +277,6 @@ class _CardScreenState extends State<SimilarCard> {
         );
       },
     );
-  }
-
-  void toggleFavorite(Videos item) {
-    if (favorites.any((fav) => fav.id == item.id)) {
-      // removeFromFavorites(image);
-      showRemoveDialog(context, item);
-      if (kDebugMode) {
-        print("removed from favs");
-      }
-    } else {
-      addToFavorites(item).then(
-        (_) => loadFavorites(),
-      );
-      if (kDebugMode) {
-        print("added to favs");
-      }
-    }
   }
 
   @override

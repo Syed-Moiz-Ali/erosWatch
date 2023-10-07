@@ -1,12 +1,14 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, must_be_immutable
 
 import 'package:flutter/cupertino.dart';
 import 'package:video_player/video_player.dart';
 
 class CustomVideoPlayer extends StatefulWidget {
   final String videoUrl;
+  bool isShown;
 
-  const CustomVideoPlayer({Key? key, required this.videoUrl}) : super(key: key);
+  CustomVideoPlayer({Key? key, required this.videoUrl, required this.isShown})
+      : super(key: key);
 
   @override
   _CustomVideoPlayerState createState() => _CustomVideoPlayerState();
@@ -18,14 +20,20 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(
-      Uri.parse(widget.videoUrl),
-    )..initialize().then((_) {
-        setState(() {});
-        _controller.play();
-        _controller.setVolume(0.0);
-        _controller.setLooping(true);
-      });
+    checkIsShown();
+  }
+
+  void checkIsShown() {
+    if (widget.isShown == true) {
+      _controller = VideoPlayerController.networkUrl(
+        Uri.parse(widget.videoUrl),
+      )..initialize().then((_) {
+          setState(() {});
+          _controller.play();
+          _controller.setVolume(0.0);
+          _controller.setLooping(true);
+        });
+    }
   }
 
   @override

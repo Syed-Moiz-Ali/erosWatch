@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:eroswatch/components/api_service.dart';
-import 'package:eroswatch/components/dropdown.dart';
+import 'package:eroswatch/components/api/api_service.dart';
+import 'package:eroswatch/components/smallComponents/dropdown.dart';
 
 import 'package:eroswatch/helper/videos.dart';
 

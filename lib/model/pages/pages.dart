@@ -7,8 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:eroswatch/components/api_service.dart';
-import 'package:eroswatch/components/dropdown.dart';
+import 'package:eroswatch/components/api/api_service.dart';
+import 'package:eroswatch/components/smallComponents/dropdown.dart';
 import 'package:eroswatch/model/pages/pageconstant.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:http/http.dart' as http;
@@ -40,7 +40,7 @@ class _MyPageSate extends State<PageScreen> {
   List<String> favorites = [];
   late final Key _key = UniqueKey();
 
-  late Future<List<Videos>> futureWallpapers;
+  // late Future<List<Videos>> futureWallpapers;
   List<Videos> favoriteWallpapers = [];
 
   void setPageDefaults() async {
@@ -54,7 +54,7 @@ class _MyPageSate extends State<PageScreen> {
   void initState() {
     super.initState();
     setPageDefaults();
-    futureWallpapers = apiService.fetchWallpapers(pageNumber);
+    // futureWallpapers = apiService.fetchWallpapers(pageNumber);
     fetchWallpapers();
     fetchAndParseVastXml();
   }

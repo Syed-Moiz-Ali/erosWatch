@@ -2,12 +2,13 @@
 
 import 'dart:async';
 import 'dart:math';
+import 'package:eroswatch/helper/videos.dart';
 import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:eroswatch/Watch/smiliar.dart';
-import 'package:eroswatch/video_player/video_player_controls.dart';
+import 'package:eroswatch/Watch/video_player/video_player_controls.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
@@ -16,13 +17,13 @@ import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
-  final String videoUrl;
+  final VideoUrls videoUrls;
   final String id;
   final String title;
 
   const VideoPlayerScreen(
       {super.key,
-      required this.videoUrl,
+      required this.videoUrls,
       required this.id,
       required this.title});
 
@@ -48,6 +49,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool showAd = true;
   bool showForward = false;
   bool showBackward = false;
+  late double playbackSpeed;
 
   List<double> widthFactorValues = [
     1.0,
@@ -67,19 +69,26 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   double currentVolume = 0;
   bool isSliderVisible = false; // Initial visibility state
   Timer? _sliderTimer; // Timer to hide the slider after a delay
+  Duration _currentPosition = Duration.zero;
+  late String? selectedLink;
+  late String selectedQuality = '480p';
 
   @override
   void initState() {
     super.initState();
+    playbackSpeed = 1.0;
+    selectedLink = widget.videoUrls.main;
     _videoPlayerController = VideoPlayerController.networkUrl(
-      Uri.parse(widget.videoUrl),
+      Uri.parse(selectedLink!),
     );
     _videoPlayerController.initialize().then((_) {
       setState(() {});
     });
     fetchAndParseVastXml();
     _videoPlayerController.addListener(() {
-      setState(() {});
+      setState(() {
+        _currentPosition = _videoPlayerController.value.position;
+      });
     });
     _videoPlayerController.play();
     _videoPlayerController.videoPlayerOptions?.webOptions?.controls;
@@ -148,42 +157,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       }
     }
   }
-
-  // void _onVerticalVolumeDragStart(DragStartDetails details) async {
-  //   _initialVolumeDrag = details.localPosition.dy;
-  //   _initialVolume = await VolumeController().getVolume();
-  // }
-
-  // void _onVerticalVolumeDragUpdate(DragUpdateDetails details) {
-  //   setState(() {
-  //     isSliderVisible = true;
-  //   });
-  //   _sliderTimer?.cancel();
-  //   _sliderTimer = Timer(const Duration(seconds: 2), () {
-  //     setState(() {
-  //       isSliderVisible = false;
-  //     });
-  //   });
-  //   double deltaY = details.localPosition.dy - _initialVolumeDrag;
-  //   double maxDeltaY =
-  //       3000.0; // Adjust this value based on desired sensitivity (higher value for less sensitivity)
-
-  //   // Limit deltaY to a maximum value to control sensitivity
-  //   deltaY = deltaY.clamp(-maxDeltaY, maxDeltaY);
-
-  //   double volumeIncrement =
-  //       -0.7; // Adjust this value for smoother adjustment (smaller value for smoother)
-
-  //   double deltaVolume = deltaY / maxDeltaY * volumeIncrement;
-
-  //   double newVolume = _initialVolume + deltaVolume;
-  //   newVolume = newVolume.clamp(0, 1); // Clamp volume between 0 and 1
-
-  //   setState(() {
-  //     currentVolume = newVolume;
-  //     VolumeController().setVolume(currentVolume);
-  //   });
-  // }
 
   void _togglePlayPause() {
     setState(() {
@@ -452,6 +425,260 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
   }
 
+  Future<void> _showQualityOptions(BuildContext context) async {
+    if (kDebugMode) {
+      print('Showing quality options');
+    }
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildQualityOption('240p', '📱', 'Low Quality'),
+            _buildQualityOption('360p', '📺', 'Standard Quality'),
+            _buildQualityOption('480p', '📺', 'High Quality'),
+            _buildQualityOption('720p', '📺', 'HD Quality'),
+            _buildQualityOption('1080p', '📺', 'Full HD Quality'),
+            _buildQualityOption('4k', '📺', '4K Quality'),
+          ],
+        );
+      },
+    ).then((_) => Navigator.pop(context));
+  }
+
+  ListTile _buildQualityOption(String quality, String emoji, String text) {
+    return ListTile(
+      leading:
+          Text(emoji, style: const TextStyle(fontSize: 20)), // Emoji or icon
+      title: Text(
+        text,
+        style: TextStyle(
+          color: selectedLink!.contains(quality) ? Colors.grey : Colors.black,
+          fontSize: 16, // Adjust the font size
+          fontWeight: FontWeight.bold, // Adjust the font weight
+        ),
+      ),
+      onTap: () {
+        changeVideoQuality(quality);
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  void _showSettingsOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildSettingsOption(
+                'Change Quality', '🎮', 'Change video quality'),
+            _buildSettingsOption(
+                'Playback Speed', '⏩', 'Change playback speed'),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> changeVideoQuality(String quality) async {
+    switch (quality) {
+      case '240p':
+        selectedLink = widget.videoUrls.link240p;
+        break;
+      case '360p':
+        selectedLink = widget.videoUrls.link360p;
+        break;
+      case '480p':
+        selectedLink = widget.videoUrls.link480p;
+        break;
+      case '720p':
+        selectedLink = widget.videoUrls.link720p;
+        break;
+      case '1080p':
+        selectedLink = widget.videoUrls.link1080p;
+        break;
+      case '4k':
+        selectedLink = widget.videoUrls.fourk;
+        break;
+    }
+
+    if (selectedLink != null) {
+      // Initialize the new controller with the selected quality URL
+      final newController = VideoPlayerController.networkUrl(
+        Uri.parse(selectedLink!),
+      );
+
+      // Initialize and seek to the stored playback position
+      await newController.initialize();
+      await newController.seekTo(_currentPosition);
+      // newController.setLooping(true);
+      newController.play();
+      // newController.setPlaybackSpeed(speed)
+
+      // Dispose the old controller
+      await _videoPlayerController.dispose();
+      setState(() {
+        _videoPlayerController = newController;
+        selectedQuality = quality;
+      });
+      // Update the selected quality and controller
+      // print(selectedLink);
+    }
+  }
+
+  ListTile _buildSettingsOption(
+      String title, String emoji, String description) {
+    return ListTile(
+      leading: Text(
+        emoji,
+        style: const TextStyle(fontSize: 20), // Emoji or icon
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16, // Adjust the font size
+          fontWeight: FontWeight.bold, // Adjust the font weight
+        ),
+      ),
+      subtitle: Text(
+        description,
+        style: const TextStyle(
+          color: Colors.grey,
+          fontSize: 14, // Adjust the font size
+        ),
+      ),
+      onTap: () {
+        _handleSettingsOption(title); // Implement your logic here
+      },
+    );
+  }
+
+  void _handleSettingsOption(String option) {
+    // Implement your logic for handling the selected settings option
+    if (option == 'Change Quality') {
+      _showQualityOptions(context);
+      // Handle change quality
+    } else if (option == 'Playback Speed') {
+      _showPlaybackSpeedBottomSheet();
+      // Handle change playback speed
+    }
+  }
+
+  TextEditingController speedController = TextEditingController();
+  double steps = 0.25;
+  double maxSpeed = 2.5;
+  void _showPlaybackSpeedBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 3,
+                blurRadius: 7,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.speed,
+                      size: 24.0,
+                      color: Colors.blue,
+                    ),
+                    SizedBox(width: 8.0),
+                    Text(
+                      'Set Playback Speed',
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        double newSpeed = playbackSpeed - steps;
+                        if (newSpeed < steps) {
+                          newSpeed = steps;
+                        }
+                        setState(() {
+                          playbackSpeed = newSpeed;
+                          speedController.text = newSpeed.toStringAsFixed(2);
+                          _videoPlayerController.setPlaybackSpeed(newSpeed);
+                        });
+                      },
+                      child: const Icon(
+                        Icons.remove_circle_outline,
+                        size: 32.0,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    Expanded(
+                      child: SizedBox(
+                        width: 60.0,
+                        child: TextField(
+                          readOnly: true,
+                          controller: speedController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 24.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        double newSpeed = playbackSpeed + steps;
+                        if (newSpeed > maxSpeed) {
+                          newSpeed = maxSpeed;
+                        }
+                        setState(() {
+                          playbackSpeed = newSpeed;
+                          speedController.text = newSpeed.toStringAsFixed(2);
+                          _videoPlayerController.setPlaybackSpeed(newSpeed);
+                        });
+                      },
+                      child: const Icon(
+                        Icons.add_circle_outline,
+                        size: 32.0,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -518,23 +745,23 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                         child: IgnorePointer(
                           ignoring: !_showControls,
                           child: VideoPlayerControls(
-                            isPlaying: _videoPlayerController.value.isPlaying,
-                            isBuffering:
-                                _videoPlayerController.value.isBuffering,
-                            togglePlayPause: _togglePlayPause,
-                            duration: _videoPlayerController.value.duration,
-                            position: _videoPlayerController.value.position,
-                            videoPlayerController: _videoPlayerController,
-                            seekForward: _seekForward,
-                            seekBackward: _seekBackward,
-                            isFullscreen: _isFullscreen,
-                            onButtonClick: _onButtonClick,
-                            enterFullscreen: _enterFullscreen,
-                            exitFullscreen: _exitFullscreen,
-                            showControls: _showControls,
-                            title: widget.title,
-                            videoUrl: widget.videoUrl,
-                          ),
+                              isPlaying: _videoPlayerController.value.isPlaying,
+                              isBuffering:
+                                  _videoPlayerController.value.isBuffering,
+                              togglePlayPause: _togglePlayPause,
+                              duration: _videoPlayerController.value.duration,
+                              position: _videoPlayerController.value.position,
+                              videoPlayerController: _videoPlayerController,
+                              seekForward: _seekForward,
+                              seekBackward: _seekBackward,
+                              isFullscreen: _isFullscreen,
+                              onButtonClick: _onButtonClick,
+                              enterFullscreen: _enterFullscreen,
+                              exitFullscreen: _exitFullscreen,
+                              showControls: _showControls,
+                              title: widget.title,
+                              videoUrl: widget.videoUrls.main,
+                              showSettingsOptions: _showSettingsOptions),
                         ),
                       ),
                     ),

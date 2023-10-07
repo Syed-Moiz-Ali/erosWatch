@@ -1,6 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api
 
-import 'package:eroswatch/auth/authchecker.dart';
+import 'package:eroswatch/auth/localAuthChecker.dart';
 
 import 'package:flutter/material.dart';
 
@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen>
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const AuthChecker(),
+        builder: (context) => const LocalAuthChecker(),
       ),
     );
   }

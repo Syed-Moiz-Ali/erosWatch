@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'card/card_screen.dart';
+import '../card/card_screen.dart';
 import '../../helper/videos.dart';
 
 class PageConstant extends StatefulWidget {

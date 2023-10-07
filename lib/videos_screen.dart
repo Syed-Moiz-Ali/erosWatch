@@ -1,19 +1,19 @@
-import 'package:eroswatch/model/pages/setting_page.dart';
+import 'package:eroswatch/model/setting/setting_page.dart';
 import 'package:eroswatch/services/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:eroswatch/Stars/stars_screen.dart';
+import 'package:eroswatch/model/Stars/stars_screen.dart';
 
 import 'package:eroswatch/model/Channels/channel_container.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:eroswatch/model/pages/favorites/fav_screen.dart';
-import 'package:eroswatch/container_screen.dart';
-import 'package:eroswatch/model/pages/tab_bar.dart';
-import 'package:eroswatch/model/pages/tags/tags_container.dart';
+import 'package:eroswatch/model/favorites/fav_screen.dart';
+import 'package:eroswatch/components/container/container_screen.dart';
+import 'package:eroswatch/model/tabBar/tab_bar.dart';
+import 'package:eroswatch/model/tags/tags_container.dart';
 // part 'components/bottom_navigatiom.dart';
 
 class VideoScreen extends StatefulWidget {
@@ -49,7 +49,9 @@ class _VideoScreenState extends State<VideoScreen>
     final promise = await account.get();
     await prefs.setString('userEmail', promise.email);
     await prefs.setString('userName', promise.name);
-    print('userDetails has been set sucessfully');
+    if (kDebugMode) {
+      print('userDetails has been set sucessfully');
+    }
   }
 
   @override

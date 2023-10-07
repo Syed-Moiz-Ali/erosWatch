@@ -1,17 +1,21 @@
+// ignore_for_file: library_private_types_in_public_api
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:eroswatch/model/pages/tags/tags_card.dart';
+import 'package:eroswatch/model/favorites/fav_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class TagsContainer extends StatefulWidget {
-  const TagsContainer({super.key});
+class FavScreen extends StatefulWidget {
+  const FavScreen({Key? key}) : super(key: key);
 
   @override
-  State<TagsContainer> createState() => _TagsContainerState();
+  _FavScreenState createState() => _FavScreenState();
 }
 
-class _TagsContainerState extends State<TagsContainer> {
-  String _selectedType = 'top';
+class _FavScreenState extends State<FavScreen> {
+  String _selectedType = 'videos';
   Key? _pageKey = UniqueKey();
+  late SharedPreferences prefs;
+
   @override
   void initState() {
     super.initState();
@@ -19,35 +23,23 @@ class _TagsContainerState extends State<TagsContainer> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          TagsCard(
-            param: _selectedType,
-            key: _pageKey,
-          ),
-        ],
-      ),
-      floatingActionButton: Container(
-        margin: const EdgeInsets.only(
-          bottom: 60,
-          right: 10,
+    // Initialization is completed, build the widget
+
+    return Stack(
+      children: [
+        FavCard(
+          type: _selectedType,
+          key: _pageKey,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.blue,
-          shape: BoxShape.circle,
-        ),
-        child: FloatingActionButton(
-          heroTag: 'float',
-          onPressed: _openMenu,
-          backgroundColor: Colors.blue,
-          child: const Icon(
-            Icons.menu,
-            color: Colors.white,
+        Positioned(
+          bottom: 80.0,
+          right: 25.0,
+          child: FloatingActionButton(
+            onPressed: _openMenu,
+            child: const Icon(Icons.menu),
           ),
         ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      ],
     );
   }
 
@@ -65,8 +57,9 @@ class _TagsContainerState extends State<TagsContainer> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildTab(0, Icons.local_fire_department, 'Top'),
-              _buildTab(1, Icons.all_inbox, 'All'),
+              _buildTab(0, Icons.label_outline, 'Videos'),
+              _buildTab(1, Icons.local_fire_department, 'Stars'),
+              _buildTab(2, Icons.upcoming_outlined, 'Channels'),
             ],
           ),
         );
@@ -74,11 +67,11 @@ class _TagsContainerState extends State<TagsContainer> {
     ).then((value) {
       if (value != null) {
         setState(() {
-          _selectedType = value.toLowerCase(); // Update the selected type
+          _selectedType = value.toLowerCase();
           _pageKey = UniqueKey();
         });
         if (kDebugMode) {
-          print('Selected option: $value');
+          print('Selected option: ${value.toLowerCase()}');
         }
       }
     });
@@ -91,7 +84,7 @@ class _TagsContainerState extends State<TagsContainer> {
       onTap: () {
         setState(() {
           _selectedType = title.toLowerCase();
-          Navigator.pop(context, title); // Pass the selected title
+          Navigator.pop(context, title);
         });
       },
       child: Container(
@@ -120,13 +113,14 @@ class _TagsContainerState extends State<TagsContainer> {
 
   int get _selectedTabIndex {
     switch (_selectedType) {
-      case 'top':
+      case 'videos':
         return 0;
-      case 'all':
+      case 'stars':
         return 1;
-
+      case 'channels':
+        return 2;
       default:
-        return 0; // Default to the first tab
+        return 0;
     }
   }
 }

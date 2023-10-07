@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 ChromeSafariBrowser? openBrowser;
 Future<void> launchAdsUrl(
@@ -343,5 +345,209 @@ class WallpaperStorage<T> {
     if (kDebugMode) {
       print('Data removed.');
     }
+  }
+}
+
+class ErosWatchDatabase {
+  late String storageKey;
+  late Database _database;
+  ErosWatchDatabase({
+    required this.storageKey,
+  });
+  ErosWatchDatabase._privateConstructor();
+
+  static final ErosWatchDatabase instance =
+      ErosWatchDatabase._privateConstructor();
+
+  Future<void> open() async {
+    try {
+      final databasesPath = await getDatabasesPath();
+      final path = join(databasesPath, 'eros$storageKey.db');
+
+      _database = await openDatabase(path, version: 1,
+          onCreate: (Database db, int version) async {
+        await db.execute(
+            'CREATE TABLE $storageKey (Id INTEGER PRIMARY KEY AUTOINCREMENT,${storageKey}Data TEXT NOT NULL)');
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error opening database: $e');
+      }
+    }
+  }
+
+  Future<int> insertVideo(Videos video) async {
+    try {
+      await open();
+      var value = {'${storageKey}Data': video.toJsonString()};
+      return await _database.insert(
+        storageKey,
+        value,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print('Error inserting video: $e');
+      }
+      return -1; // Return an error code or throw an exception as needed
+    }
+  }
+
+  Future<int> insertStars(Stars video) async {
+    try {
+      await open();
+      var value = {'${storageKey}Data': video.toJsonString()};
+      return await _database.insert(
+        storageKey,
+        value,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print('Error inserting video: $e');
+      }
+      return -1; // Return an error code or throw an exception as needed
+    }
+  }
+
+  Future<int> insertChannels(Channels video) async {
+    try {
+      await open();
+      var value = {'${storageKey}Data': video.toJsonString()};
+      return await _database.insert(
+        storageKey,
+        value,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print('Error inserting video: $e');
+      }
+      return -1; // Return an error code or throw an exception as needed
+    }
+  }
+
+  Future<int> updateVideo(video) async {
+    try {
+      await open();
+      return await _database.update(
+        '${storageKey}Data',
+        video.toMap(),
+        where: 'id = ?',
+        whereArgs: [video.id],
+      );
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print('Error updating video: $e');
+      }
+      return -1; // Return an error code or throw an exception as needed
+    }
+  }
+
+  Future<List<Videos>> getAllVideos() async {
+    try {
+      await open();
+      List<Map<String, dynamic>> maps = await _database.query(storageKey);
+      return List.generate(maps.length, (i) {
+        final String jsonData = maps[i]['${storageKey}Data'];
+        return Videos.fromJson(json.decode(jsonData));
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error retrieving videos: $e');
+      }
+      return [];
+    }
+  }
+
+  Future<List<Stars>> getAllStars() async {
+    try {
+      await open();
+      List<Map<String, dynamic>> maps = await _database.query(storageKey);
+      return List.generate(maps.length, (i) {
+        final String jsonData = maps[i]['${storageKey}Data'];
+        return Stars.fromJson(json.decode(jsonData));
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error retrieving videos: $e');
+      }
+      return [];
+    }
+  }
+
+  Future<List<Channels>> getAllChannels() async {
+    try {
+      await open();
+      List<Map<String, dynamic>> maps = await _database.query(storageKey);
+      return List.generate(maps.length, (i) {
+        final String jsonData = maps[i]['${storageKey}Data'];
+        return Channels.fromJson(json.decode(jsonData));
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error retrieving videos: $e');
+      }
+      return [];
+    }
+  }
+
+  Future<int> deleteVideo(Videos video) async {
+    try {
+      await open();
+      return await _database.delete(
+        storageKey,
+        where: '${storageKey}Data = ?',
+        whereArgs: [video.toJsonString()],
+      );
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print('Error deleting video: $e');
+      }
+      return -1; // Return an error code or throw an exception as needed
+    }
+  }
+
+  Future<int> deleteStar(Stars video) async {
+    try {
+      await open();
+      return await _database.delete(
+        storageKey,
+        where: '${storageKey}Data = ?',
+        whereArgs: [video.toJsonString()],
+      );
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print('Error deleting video: $e');
+      }
+      return -1; // Return an error code or throw an exception as needed
+    }
+  }
+
+  Future<int> deleteChannel(Channels video) async {
+    try {
+      await open();
+      return await _database.delete(
+        storageKey,
+        where: '${storageKey}Data = ?',
+        whereArgs: [video.toJsonString()],
+      );
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print('Error deleting video: $e');
+      }
+      return -1; // Return an error code or throw an exception as needed
+    }
+  }
+
+  Future<void> close() async {
+    await _database.close();
   }
 }

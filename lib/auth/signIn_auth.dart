@@ -1,7 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, file_names
 import 'dart:math';
 
-import 'package:eroswatch/components/inapp_update.dart';
+import 'package:eroswatch/components/smallComponents/inapp_update.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:eroswatch/services/appwrite.dart';

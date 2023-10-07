@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
-import 'package:eroswatch/components/inapp_update.dart';
+import 'package:eroswatch/components/smallComponents/inapp_update.dart';
+import 'package:eroswatch/videos_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
@@ -49,7 +50,9 @@ class _AuthPageState extends State<AuthPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const UpdateScreen(),
+          builder: (context) =>
+              // const UpdateScreen(),
+              const VideoScreen(),
         ),
       );
     }

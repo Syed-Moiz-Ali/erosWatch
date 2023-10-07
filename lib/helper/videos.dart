@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Videos {
   final String id;
   final String image;
@@ -28,6 +30,43 @@ class Videos {
     };
   }
 
+  String toJsonString() {
+    final Map<String, dynamic> jsonData = {
+      'id': id,
+      'image': image,
+      'title': title,
+      'preview': preview,
+      'duration': duration,
+      'quality': quality,
+      'time': time,
+    };
+
+    return jsonEncode(jsonData);
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id.toString(),
+      'image': image.toString(),
+      'title': title.toString(),
+      'preview': preview.toString(),
+      'duration': duration.toString(),
+      'quality': quality.toString(),
+      'time': time.toString(),
+    };
+  }
+
+  factory Videos.fromMap(Map<String, dynamic> map) {
+    return Videos(
+      id: map['id'],
+      image: map['image'],
+      title: map['title'],
+      preview: map['preview'],
+      duration: map['duration'],
+      quality: map['quality'],
+      time: map['time'],
+    );
+  }
   factory Videos.fromJson(Map<String, dynamic> json) {
     return Videos(
       id: json['id'] ?? "",
@@ -42,33 +81,15 @@ class Videos {
 }
 
 class Episode {
-  final String name;
-  final String description;
-  final String thumbnailUrl;
-  final String image;
-  final String embedUrl;
-  final String contentUrl;
   final String keywords;
+  final Map<String, dynamic> streamUrls;
 
-  Episode({
-    required this.name,
-    required this.description,
-    required this.thumbnailUrl,
-    required this.image,
-    required this.embedUrl,
-    required this.contentUrl,
-    required this.keywords,
-  });
+  Episode({required this.keywords, required this.streamUrls});
 
   factory Episode.fromJson(Map<String, dynamic> json) {
     return Episode(
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      thumbnailUrl: json['thumbnailUrl'] ?? '',
-      image: json['image'] ?? '',
-      embedUrl: json['embedUrl'] ?? '',
-      contentUrl: json['contentUrl'] ?? '',
       keywords: json['keywords'] ?? '',
+      streamUrls: Map<String, dynamic>.from(json['streamUrls'] ?? {}),
     );
   }
 }
@@ -112,6 +133,18 @@ class Stars {
       'views': views,
       'videos': videos,
     };
+  }
+
+  String toJsonString() {
+    final Map<String, dynamic> jsonData = {
+      'id': id,
+      'starName': starName,
+      'image': image,
+      'views': views,
+      'videos': videos,
+    };
+
+    return jsonEncode(jsonData);
   }
 
   factory Stars.fromJson(Map<String, dynamic> json) {
@@ -185,6 +218,16 @@ class Channels {
     };
   }
 
+  String toJsonString() {
+    final Map<String, dynamic> jsonData = {
+      'id': id,
+      'title': title,
+      'image': image,
+    };
+
+    return jsonEncode(jsonData);
+  }
+
   factory Channels.fromJson(Map<String, dynamic> json) {
     return Channels(
       id: json['id'] ?? '',
@@ -242,4 +285,30 @@ class ImageData {
   final String title;
 
   ImageData({required this.imageUrl, required this.title});
+}
+
+class VideoUrls {
+  final String thumbnail;
+  final String keywords;
+  final String link240p;
+  final String link360p;
+  final String link480p;
+  final String link720p;
+  final String link1080p;
+  final String fourk;
+  final String main;
+  final String m3u8;
+
+  VideoUrls({
+    required this.thumbnail,
+    required this.keywords,
+    required this.link240p,
+    required this.link360p,
+    required this.link480p,
+    required this.link720p,
+    required this.link1080p,
+    required this.fourk,
+    required this.main,
+    required this.m3u8,
+  });
 }

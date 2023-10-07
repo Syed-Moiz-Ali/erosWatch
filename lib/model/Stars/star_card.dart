@@ -1,17 +1,13 @@
 // import 'dart:html';
 // ignore_for_file: library_private_types_in_public_api
 
-import 'dart:convert';
-
+import 'package:eroswatch/components/smallComponents/image_compoenent.dart';
 import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:eroswatch/Stars/star_container_screen.dart';
+import 'package:eroswatch/model/Stars/star_container_screen.dart';
 import 'package:eroswatch/helper/videos.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../components/api_service.dart';
 
 class StarCard extends StatefulWidget {
   final List<Stars> content;
@@ -34,26 +30,12 @@ class _CardScreenState extends State<StarCard> {
   bool changeOnTap = true;
   // final Map<int, bool> _isPlayingMap =
   //     {};
-  late WallpaperStorage<Stars> wallpaperStorage;
-
+  final database = ErosWatchDatabase(storageKey: 'stars');
   @override
   void initState() {
     super.initState();
-    initializing().then(
-      (value) => loadFavorites(),
-    );
+    loadFavorites();
     // _isPlaying = false;
-  }
-
-  Future<void> initializing() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      wallpaperStorage = WallpaperStorage<Stars>(
-          storageKey: 'favoriteStars',
-          fromJson: (json) => Stars.fromJson(json),
-          toJson: (videos) => videos.toJson(),
-          prefs: prefs);
-    });
   }
 
   void handleClickButton(
@@ -187,25 +169,55 @@ class _CardScreenState extends State<StarCard> {
     );
   }
 
-  void loadFavorites() async {
-    final jsonStringList = await wallpaperStorage.getDataList();
-    setState(() {
-      if (jsonStringList != null) {
-        favorites = jsonStringList;
-      } else {
-        favorites = [];
+  void toggleFavorite(Stars item) {
+    if (favorites.any((fav) => fav.id == item.id)) {
+      showRemoveDialog(context, item);
+      if (kDebugMode) {
+        print("removed from favs");
       }
-    });
+    } else {
+      addToFavorites(item);
+      if (kDebugMode) {
+        print("added to favs");
+      }
+    }
+  }
+
+  void loadFavorites() async {
+    try {
+      final favoritesList = await database.getAllStars();
+      setState(() {
+        favorites = favoritesList;
+      });
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error loading favorites: $e");
+      }
+    }
   }
 
   Future<void> addToFavorites(Stars item) async {
-    Stars stars = item;
-    favorites.add(item);
-    await wallpaperStorage.storeData(stars, context);
+    try {
+      await database.open();
+      await database.insertStars(item).then((_) => loadFavorites());
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error adding to favorites: $e");
+      }
+    }
   }
 
-  Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id, context);
+  Future<void> removeFromFavorites(Stars item) async {
+    try {
+      await database.deleteStar(item).then((_) => loadFavorites());
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error removing from favorites: $e");
+      }
+    }
   }
 
   void showRemoveDialog(BuildContext context, Stars item) {
@@ -223,9 +235,7 @@ class _CardScreenState extends State<StarCard> {
             TextButton(
               onPressed: () {
                 // Perform the remove action
-                removeFromFavorites(item.id).then(
-                  (_) => loadFavorites(),
-                );
+                removeFromFavorites(item);
                 Navigator.of(context)
                     .pop(true); // Return true to indicate remove
               },
@@ -243,23 +253,6 @@ class _CardScreenState extends State<StarCard> {
         );
       },
     );
-  }
-
-  void toggleFavorite(Stars item) {
-    if (favorites.any((fav) => fav.id == item.id)) {
-      // removeFromFavorites(image);
-      showRemoveDialog(context, item);
-      if (kDebugMode) {
-        print("removed from favs");
-      }
-    } else {
-      addToFavorites(item).then(
-        (_) => loadFavorites(),
-      );
-      if (kDebugMode) {
-        print("added to favs");
-      }
-    }
   }
 
   @override

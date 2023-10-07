@@ -2,15 +2,13 @@
 
 // ignore_for_file: library_private_types_in_public_api
 
-import 'dart:convert';
-
+import 'package:eroswatch/components/smallComponents/image_compoenent.dart';
 import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:eroswatch/Stars/star_container_screen.dart';
-import 'package:eroswatch/components/api_service.dart';
+import 'package:eroswatch/model/Stars/star_container_screen.dart';
+
 import 'package:eroswatch/helper/videos.dart';
 
 class ChannelCard extends StatefulWidget {
@@ -33,27 +31,13 @@ class _ChannelScreenState extends State<ChannelCard> {
   List<Channels> favorites = [];
 
   final ChromeSafariBrowser browser = ChromeSafariBrowser();
-  int _currentPlayingIndex = -1;
   bool changeOnTap = true;
-  late final WallpaperStorage<Channels> wallpaperStorage;
+  final database = ErosWatchDatabase(storageKey: 'channels');
   @override
   void initState() {
     super.initState();
-    initializing().then(
-      (value) => loadFavorites(),
-    );
+    loadFavorites();
     // _isPlaying = false;
-  }
-
-  Future<void> initializing() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      wallpaperStorage = WallpaperStorage<Channels>(
-          storageKey: 'favoriteChannels',
-          fromJson: (json) => Channels.fromJson(json),
-          toJson: (videos) => videos.toJson(),
-          prefs: prefs);
-    });
   }
 
   final demoImage =
@@ -92,10 +76,8 @@ class _ChannelScreenState extends State<ChannelCard> {
         final Channels channel = filteredContent[index];
         final newImage = channel.image;
         // print(newImage);
-        bool isPlaying = index == _currentPlayingIndex;
-        if (kDebugMode) {
-          print(isPlaying);
-        }
+        // bool isPlaying = index == _currentPlayingIndex;
+
         return GestureDetector(
           onTap: () {
             if (!newImage.contains('spankbang')) {
@@ -117,16 +99,7 @@ class _ChannelScreenState extends State<ChannelCard> {
               });
             }
           },
-          onHorizontalDragStart: (details) {
-            setState(() {
-              _currentPlayingIndex = index;
-            });
-          },
-          onHorizontalDragEnd: (details) {
-            setState(() {
-              _currentPlayingIndex = index;
-            });
-          },
+
           // onLongPress: () {
           //   setState(() {
           //     if (_currentPlayingIndex == index) {
@@ -197,25 +170,54 @@ class _ChannelScreenState extends State<ChannelCard> {
     );
   }
 
-  void loadFavorites() async {
-    final jsonStringList = await wallpaperStorage.getDataList();
-    setState(() {
-      if (jsonStringList != null) {
-        favorites = jsonStringList;
-      } else {
-        favorites = [];
+  void toggleFavorite(Channels item) {
+    if (favorites.any((fav) => fav.id == item.id)) {
+      showRemoveDialog(context, item);
+      if (kDebugMode) {
+        print("removed from favs");
       }
-    });
+    } else {
+      addToFavorites(item);
+      if (kDebugMode) {
+        print("added to favs");
+      }
+    }
+  }
+
+  void loadFavorites() async {
+    try {
+      final favoritesList = await database.getAllChannels();
+      setState(() {
+        favorites = favoritesList;
+      });
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error loading favorites: $e");
+      }
+    }
   }
 
   Future<void> addToFavorites(Channels item) async {
-    Channels channels = item;
-    favorites.add(item);
-    await wallpaperStorage.storeData(channels, context);
+    try {
+      await database.insertChannels(item).then((_) => loadFavorites());
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error adding to favorites: $e");
+      }
+    }
   }
 
-  Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id, context);
+  Future<void> removeFromFavorites(Channels item) async {
+    try {
+      await database.deleteChannel(item).then((_) => loadFavorites());
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error removing from favorites: $e");
+      }
+    }
   }
 
   void showRemoveDialog(BuildContext context, Channels item) {
@@ -233,9 +235,7 @@ class _ChannelScreenState extends State<ChannelCard> {
             TextButton(
               onPressed: () {
                 // Perform the remove action
-                removeFromFavorites(item.id).then(
-                  (_) => loadFavorites(),
-                );
+                removeFromFavorites(item);
                 Navigator.of(context)
                     .pop(true); // Return true to indicate remove
               },
@@ -253,23 +253,6 @@ class _ChannelScreenState extends State<ChannelCard> {
         );
       },
     );
-  }
-
-  void toggleFavorite(Channels item) {
-    if (favorites.any((fav) => fav.id == item.id)) {
-      // removeFromFavorites(image);
-      showRemoveDialog(context, item);
-      if (kDebugMode) {
-        print("removed from favs");
-      }
-    } else {
-      addToFavorites(item).then(
-        (_) => loadFavorites(),
-      );
-      if (kDebugMode) {
-        print("added to favs");
-      }
-    }
   }
 
   @override

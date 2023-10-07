@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:eroswatch/components/api_service.dart';
+import 'package:eroswatch/components/api/api_service.dart';
 import 'package:eroswatch/helper/videos.dart';
 
 class StarDetailCard extends StatefulWidget {

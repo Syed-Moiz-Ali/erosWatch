@@ -2,16 +2,15 @@
 // ignore_for_file: must_be_immutable, library_private_types_in_public_api
 
 import 'package:appwrite/appwrite.dart';
-import 'package:eroswatch/services/appwrite.dart';
+import 'package:eroswatch/components/smallComponents/image_compoenent.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:eroswatch/helper/videos.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:eroswatch/video_player/video_player.dart';
-import 'package:eroswatch/components/api_service.dart';
-import '../../../util/utils.dart';
-import '../detail_screen.dart';
+import 'package:eroswatch/Watch/video_player/mini_video_player.dart';
+
+import '../../util/utils.dart';
+import '../detail/detail_screen.dart';
 
 class CardScreen extends StatefulWidget {
   final List<Videos> content;
@@ -34,61 +33,13 @@ class _CardScreenState extends State<CardScreen> {
   // final Map<int, bool> _isPlayingMap =
   late RealtimeSubscription subscribtion;
   int _currentPlayingIndex = -1;
+  final database = ErosWatchDatabase(storageKey: 'videos');
   //     {};
-  late final WallpaperStorage<Videos> wallpaperStorage;
 
   @override
   void initState() {
     super.initState();
-    initializing().then(
-      (value) => loadFavorites(),
-    );
-
-    subscribe();
-  }
-
-  Future<void> initializing() async {
-    final prefs = await SharedPreferences.getInstance();
-    final newData = WallpaperStorage<Videos>(
-        storageKey: 'favorites',
-        fromJson: (json) => Videos.fromJson(json),
-        toJson: (videos) => videos.toJson(),
-        prefs: prefs);
-    setState(() {
-      wallpaperStorage = newData;
-    });
-  }
-
-  void subscribe() {
-    subscribtion = realtime.subscribe(['documents']);
-    subscribtion.stream.listen((event) {
-      final eventType = event.events;
-      final payload = event.payload;
-
-      if (eventType.contains('databases.*.collections.*.documents.*.create')) {
-        handleSubscription(payload);
-      } else if (eventType
-          .contains('databases.*.collections.*.documents.*.delete')) {
-        handleSubscription(payload);
-      }
-    });
-  }
-
-  void handleSubscription(Map<String, dynamic> payload) {
-    setState(() {
-      // documents = List<DocumentData>.from(payload['imageUrl']);
-      // listData.documents.map((document) {
-      //   var data = document.data;
-      //   documentId = document.$id;
-      //   return DocumentData(
-      //     email: data['userEmail'],
-      //     name: data['userName'],
-      //     imageUrl: data['url'],
-      //     date: data['date'],
-      //   );
-      // }).toList();
-      wallpaperStorage.getDataList();
-    });
+    loadFavorites();
   }
 
   text(String text) {
@@ -128,7 +79,7 @@ class _CardScreenState extends State<CardScreen> {
                     MaterialPageRoute(
                       builder: (context) =>
                           // AdCard()
-                          DetailScreen(id: videos.id),
+                          DetailScreen(id: videos.id, title: videos.title),
                     ),
                   );
                   loadFavorites();
@@ -164,6 +115,7 @@ class _CardScreenState extends State<CardScreen> {
                                   : isPlaying
                                       ? CustomVideoPlayer(
                                           videoUrl: videos.preview,
+                                          isShown: isPlaying ? true : false,
                                         )
                                       : ImageComponent(
                                           imagePath: videos.image,
@@ -230,26 +182,130 @@ class _CardScreenState extends State<CardScreen> {
     );
   }
 
+  // void loadFavorites() async {
+  //   final jsonStringList = await wallpaperStorage.getDataList();
+  //   await wallpaperStorage.restoreData();
+  //   setState(() {
+  //     favorites = jsonStringList;
+  //   });
+  // }
+
+  // Future<void> addToFavorites(Videos item) async {
+  //   Videos videos = item;
+  //   favorites.add(item);
+  //   await wallpaperStorage.storeData(videos, context).then(
+  //         (_) => loadFavorites(),
+  //       );
+  // }
+
+  // Future<void> removeFromFavorites(id) async {
+  //   await wallpaperStorage.removeData(id, context).then(
+  //         (_) => loadFavorites(),
+  //       );
+  // }
+
+  // void showRemoveDialog(BuildContext context, Videos item) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(20.0),
+  //         ),
+  //         title:
+  //             const Text("Warning..!!", style: TextStyle(color: Colors.blue)),
+  //         content: const Text("Are you sure you want to remove this item?"),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               // Perform the remove action
+  //               removeFromFavorites(item.id).then(
+  //                 (_) => loadFavorites(),
+  //               );
+  //               Navigator.of(context)
+  //                   .pop(true); // Return true to indicate remove
+  //             },
+  //             child: const Text("Remove", style: TextStyle(fontSize: 16.0)),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               // Cancel the remove action
+  //               Navigator.of(context)
+  //                   .pop(false); // Return false to indicate cancel
+  //             },
+  //             child: const Text("Cancel", style: TextStyle(fontSize: 16.0)),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+  // void toggleFavorite(Videos item) {
+  //   if (favorites.any((fav) => fav.id == item.id)) {
+  //     // removeFromFavorites(image);
+  //     showRemoveDialog(context, item);
+  //     if (kDebugMode) {
+  //       print("removed from favs");
+  //     }
+  //   } else {
+  //     addToFavorites(item).then(
+  //       (_) => loadFavorites(),
+  //     );
+  //     if (kDebugMode) {
+  //       print("added to favs");
+  //     }
+  //   }
+  // }
+  void toggleFavorite(Videos item) {
+    if (favorites.any((fav) => fav.id == item.id)) {
+      showRemoveDialog(context, item);
+      if (kDebugMode) {
+        print("removed from favs");
+      }
+    } else {
+      addToFavorites(item);
+      if (kDebugMode) {
+        print("added to favs");
+      }
+    }
+  }
+
   void loadFavorites() async {
-    final jsonStringList = await wallpaperStorage.getDataList();
-    await wallpaperStorage.restoreData();
-    setState(() {
-      favorites = jsonStringList;
-    });
+    try {
+      final favoritesList = await database.getAllVideos();
+      setState(() {
+        favorites = favoritesList;
+      });
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error loading favorites: $e");
+      }
+    }
   }
 
   Future<void> addToFavorites(Videos item) async {
-    Videos videos = item;
-    favorites.add(item);
-    await wallpaperStorage.storeData(videos, context).then(
-          (_) => loadFavorites(),
-        );
+    try {
+      await database.insertVideo(item).then((_) => loadFavorites());
+      loadFavorites();
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error adding to favorites: $e");
+      }
+    }
   }
 
-  Future<void> removeFromFavorites(id) async {
-    await wallpaperStorage.removeData(id, context).then(
-          (_) => loadFavorites(),
-        );
+  Future<void> removeFromFavorites(Videos item) async {
+    try {
+      await database.deleteVideo(item).then((_) => loadFavorites());
+    } catch (e) {
+      // Handle the error, e.g., show an error message
+      if (kDebugMode) {
+        print("Error removing from favorites: $e");
+      }
+    }
   }
 
   void showRemoveDialog(BuildContext context, Videos item) {
@@ -267,9 +323,7 @@ class _CardScreenState extends State<CardScreen> {
             TextButton(
               onPressed: () {
                 // Perform the remove action
-                removeFromFavorites(item.id).then(
-                  (_) => loadFavorites(),
-                );
+                removeFromFavorites(item);
                 Navigator.of(context)
                     .pop(true); // Return true to indicate remove
               },
@@ -287,23 +341,6 @@ class _CardScreenState extends State<CardScreen> {
         );
       },
     );
-  }
-
-  void toggleFavorite(Videos item) {
-    if (favorites.any((fav) => fav.id == item.id)) {
-      // removeFromFavorites(image);
-      showRemoveDialog(context, item);
-      if (kDebugMode) {
-        print("removed from favs");
-      }
-    } else {
-      addToFavorites(item).then(
-        (_) => loadFavorites(),
-      );
-      if (kDebugMode) {
-        print("added to favs");
-      }
-    }
   }
 
   @override

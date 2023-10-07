@@ -6,10 +6,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:eroswatch/Watch/video_tags.dart';
 
-import 'package:eroswatch/components/api_service.dart';
+import 'package:eroswatch/components/api/api_service.dart';
 import 'package:eroswatch/helper/videos.dart';
 
-import 'package:eroswatch/model/pages/card/similarCard.dart';
+import 'package:eroswatch/model/card/similarCard.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
@@ -25,7 +25,6 @@ class SimilarScreen extends StatefulWidget {
 class _SimilarScreenState extends State<SimilarScreen> {
   late final APIService apiService = APIService(params: 'similar${widget.id}');
   List<Videos> wallpapers = [];
-  late Future<List<Videos>> futureWallpapers;
   List<Videos> favoriteWallpapers = [];
   int pageNumber = 1;
   bool isLoading = false;
@@ -38,9 +37,8 @@ class _SimilarScreenState extends State<SimilarScreen> {
   @override
   void initState() {
     super.initState();
-    futureWallpapers = apiService.fetchWallpapers(1);
+
     fetchAndParseVastXml().then((_) => fetchWallpapers());
-    fetchWallpapers();
   }
 
   @override
@@ -150,40 +148,7 @@ class _SimilarScreenState extends State<SimilarScreen> {
             text: text,
           ),
         ),
-        // if (widget.isFullScreen)
-        // ListView.builder(
-        //   padding: EdgeInsets.zero, // Set padding to zero
 
-        //   itemCount: wallpapers.length + 1,
-        //   itemBuilder: (context, index) {
-        //     if (index == wallpapers.length) {
-        //       // Loader widget displayed at the end of the horizontal list
-        //       if (isLoading) {
-        //         return const Center(
-        //           child: CircularProgressIndicator(),
-        //         );
-        //       } else {
-        //         return const SizedBox(
-        //           width: 16,
-        //           child: Text(
-        //             'sjafhiohf',
-        //             style: TextStyle(
-        //               fontSize: 20,
-        //             ),
-        //           ),
-        //         ); // Empty space
-        //       }
-        //     } else {
-        //       // Videos item
-        //       return SizedBox(
-        //         width: 220,
-        //         height: 200,
-        //         child: SimilarCard(content: [wallpapers[index]]),
-        //       );
-        //     }
-        //   },
-        //   // onNotification: _onScrollNotification,
-        // ),
         SizedBox(
             height: 500, // Set a fixed height for the SimilarScreen
             child:
@@ -196,40 +161,5 @@ class _SimilarScreenState extends State<SimilarScreen> {
             ))
       ],
     );
-    //     Align(
-    //   alignment:
-    //       Alignment.bottomCenter, // Align the SimilarScreen to the bottom
-    //   child: SizedBox(
-    //     height: 200, // Set a fixed height for the SimilarScreen
-    //     // color: Colors.black45, // Set the background color to black
-    //     child: ListView.builder(
-    //       padding: EdgeInsets.zero,
-    //       scrollDirection: Axis.horizontal,
-    //       itemCount: wallpapers.length + 1,
-    //       itemBuilder: (context, index) {
-    //         if (index == wallpapers.length) {
-    //           // Loader widget displayed at the end of the horizontal list
-    //           if (isLoading) {
-    //             return const Center(
-    //               child: CircularProgressIndicator(),
-    //             );
-    //           } else {
-    //             return const SizedBox(width: 16); // Empty space
-    //           }
-    //         } else {
-    //           // Videos item
-    //           return SizedBox(
-    //             width: 220,
-    //             child: SimilarCard(content: [wallpapers[index]]),
-    //           );
-    //         }
-    //       },
-    //     ),
-    //   ),
-    // );
-    // PageConstant(
-    //     fetchWallpapers: fetchWallpapers,
-    //     content: wallpapers,
-    //     isLoading: isLoading);
   }
 }

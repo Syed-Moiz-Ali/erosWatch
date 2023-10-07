@@ -4,9 +4,9 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:eroswatch/Stars/star_card.dart';
-import '../components/api_service.dart';
-import '../helper/videos.dart';
+import 'package:eroswatch/model/Stars/star_card.dart';
+import '../../components/api/api_service.dart';
+import '../../helper/videos.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
