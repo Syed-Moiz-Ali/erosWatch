@@ -41,7 +41,7 @@ class _SettingScreenState extends State<SettingScreen> {
     isTextFieldEnabled = false;
     fetchPackageInfoAndCheckForUpdates();
     _loadPreferences();
-    loadUsers();
+    // loadUsers();
   }
 
   Future<void> fetchPackageInfoAndCheckForUpdates() async {

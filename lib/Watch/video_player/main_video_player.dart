@@ -15,6 +15,7 @@ import 'package:video_player/video_player.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
+import 'package:auto_orientation/auto_orientation.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final VideoUrls videoUrls;
@@ -250,15 +251,18 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
 
   void _enterFullscreen() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.landscapeRight,
+    //   DeviceOrientation.landscapeLeft,
+    // ]);
+    AutoOrientation.landscapeAutoMode(forceSensor: true);
     _hideControlsAfterDelay();
     setState(() {
       _isFullscreen = true;
     });
     _animateFullscreenEntry();
+
+    // Update the VideoPlayerController's preferred orientations to match fullscreen
   }
 
   Future<bool> _exitFullscreen() async {
@@ -302,89 +306,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       currentHeightFactorIndex =
           (currentHeightFactorIndex + 1) % heightFactorValues.length;
     });
-  }
-
-  slider(double currentVolume) {
-    return Transform.rotate(
-      angle: -90 * (pi / 180),
-      child: Opacity(
-        opacity: 0.8,
-        child:
-            // SliderTheme(
-            //   data: SliderThemeData(
-            //     activeTrackColor: Colors.blue,
-            //     inactiveTrackColor: Colors.grey,
-            //     overlayColor: Colors.blue.withOpacity(0.3),
-            //     overlayShape: const RoundSliderOverlayShape(overlayRadius: 5.0),
-            //     thumbShape: const RoundSliderThumbShape(
-            //       enabledThumbRadius: 5.0,
-            //       disabledThumbRadius: 5.0,
-            //     ),
-            //     trackShape: const RoundedRectSliderTrackShape(),
-            //     rangeTrackShape: const RoundedRectRangeSliderTrackShape(),
-            //     valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
-            //     trackHeight: 6.0,
-            //   ),
-            //   child: Slider(
-            //     onChanged: (double value) {
-            //       setState(() {
-            //         currentVolume = value;
-            //         VolumeController().setVolume(currentVolume);
-            //       });
-            //     },
-            //     value: currentVolume,
-            //     min: 0,
-            //     max: 1,
-            //   ),
-            // ),
-            Center(
-          child: SizedBox(
-            width: 160,
-            height: 5,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2000),
-              child: LinearProgressIndicator(
-                value: currentVolume,
-                minHeight: 45.0,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                backgroundColor: Colors.grey, // Set the background color
-              ),
-            ),
-          ),
-        ),
-        //     Center(
-        //   child: Container(
-        //       width: 50,
-        //       height: 50,
-        //       child: CircularProgressIndicator(value: currentVolume)),
-        // ),
-      ),
-    );
-  }
-
-  Widget customVolumeControl(double currentVolume) {
-    return Align(
-      child: Container(
-        width: 100, // Adjust the width as needed
-        height: 200, // Adjust the height as needed
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5), // Background color
-          borderRadius: BorderRadius.circular(20.0), // Rounded corners
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.volume_up, // Volume icon
-              color: Colors.white,
-              size: 40.0,
-            ),
-            // const SizedBox(height: 20.0),
-            slider(currentVolume),
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> handleClickButton(

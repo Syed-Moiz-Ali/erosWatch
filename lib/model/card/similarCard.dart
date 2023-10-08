@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:eroswatch/helper/videos.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/util/utils.dart';
 import 'package:eroswatch/Watch/video_player/mini_video_player.dart';
 

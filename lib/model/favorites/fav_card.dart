@@ -107,7 +107,6 @@ class _FavCardState extends State<FavCard> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       triggerMode: RefreshIndicatorTriggerMode.onEdge,
@@ -124,7 +123,7 @@ class _FavCardState extends State<FavCard> {
   Widget _buildContent() {
     if (widget.type == 'stars') {
       if (favoriteStars.isEmpty) {
-        return const notFoundWdget();
+        return const NotFoundWdget();
       } else {
         return Stack(
           children: [
@@ -144,7 +143,7 @@ class _FavCardState extends State<FavCard> {
       }
     } else if (widget.type == 'channels') {
       if (favoriteChannels.isEmpty) {
-        return const notFoundWdget();
+        return const NotFoundWdget();
       } else {
         return Stack(
           children: [
@@ -164,7 +163,7 @@ class _FavCardState extends State<FavCard> {
       }
     } else {
       if (favoriteVideos.isEmpty) {
-        return const notFoundWdget();
+        return const NotFoundWdget();
       } else {
         return Stack(
           children: [
@@ -285,18 +284,31 @@ class _FavCardState extends State<FavCard> {
   }
 }
 
-class notFoundWdget extends StatelessWidget {
-  const notFoundWdget({
+class NotFoundWdget extends StatelessWidget {
+  const NotFoundWdget({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "No Favorites Found",
-        style: TextStyle(fontSize: 20, color: Colors.black),
-      ),
+    return FutureBuilder(
+      future: Future.delayed(const Duration(seconds: 2)), // Delay for 2 seconds
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Show a loader while waiting
+          return const Center(
+            child: CircularProgressIndicator(), // You can use any loader widget
+          );
+        } else {
+          // After 2 seconds, display the "No Favorites Found" message
+          return const Center(
+            child: Text(
+              "No Favorites Found",
+              style: TextStyle(fontSize: 20, color: Colors.black),
+            ),
+          );
+        }
+      },
     );
   }
 }

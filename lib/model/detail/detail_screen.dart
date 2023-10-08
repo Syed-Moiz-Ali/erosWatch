@@ -111,10 +111,6 @@ class _DetailScreenState extends State<DetailScreen> {
         final String fourk = getStreamLink(streamUrls, '4k');
         final String main = getStreamLink(streamUrls, 'main');
         final String m3u8 = getStreamLink(streamUrls, 'm3u8');
-        // final String streamSheet = streamUrls['stream_sheet'];
-        // final String coverImage = streamUrls['cover_image'];
-        // final int streamRawId = streamUrls['stream_raw_id'];
-        // final int length = streamUrls['length'];
 
         final videoUrls = VideoUrls(
           thumbnail: thumbnail,
@@ -132,31 +128,7 @@ class _DetailScreenState extends State<DetailScreen> {
           videoUrls: videoUrls,
           id: widget.id,
           title: widget.title,
-          // isFullScreen: _isFullScreen,
-          // image: image,
         );
-        // ListTile(
-        //   title: Text('Keywords: $keywords'),
-        //   subtitle: Column(
-        //     crossAxisAlignment: CrossAxisAlignment.start,
-        //     children: [
-        //       Text('Thumbnail: $thumbnail'),
-        //       Text('link240p: $link240p'),
-        //       Text('link360p: $link360p'),
-        //       Text('link480p: $link480p'),
-        //       Text('link720p: $link720p'),
-        //       Text('link1080p: $link1080p'),
-        //       Text('4k: $fourk'),
-        //       Text('main: $main'),
-        //       Text('m3u8: $m3u8'),
-        //       // Text('Cover Image: $coverImage'),
-        //       // Text('Stream Raw ID: $streamRawId'),
-        //       // Text('Length: $length'),
-        //       Text('Stream URLs:'),
-        //       // Display 240p resolution URLs
-        //     ],
-        //   ),
-        // );
       },
     ));
   }

@@ -46,5 +46,5 @@ jobs:
         with:
           artifacts: "build/app/outputs/apk/release/*"
           prerelease: false
-          tag: "v1.0.3" # Use the extracted version
+          tag: "v1.0.4" # Use the extracted version
           token: ${{ secrets.TOKEN }}
