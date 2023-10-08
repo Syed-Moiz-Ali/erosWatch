@@ -27,10 +27,7 @@ jobs:
         id: extract_version
         run: echo "::set-output name=version::$(echo $TAG | sed -n 's/refs\/tags\/v//p')"
 
-      - name: Update pubspec.yaml with version
-        run: |
-          sed -i.bak "s/version:.*/version: '1.0.4'/" pubspec.yaml
-        shell: bash
+     
       
 
       - name: Setup Flutter
