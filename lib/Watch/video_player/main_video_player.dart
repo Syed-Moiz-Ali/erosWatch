@@ -18,15 +18,15 @@ import 'package:xml/xml.dart';
 import 'package:auto_orientation/auto_orientation.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
-  final VideoUrls videoUrls;
-  final String id;
-  final String title;
-
   const VideoPlayerScreen(
       {super.key,
       required this.videoUrls,
       required this.id,
       required this.title});
+
+  final String id;
+  final String title;
+  final VideoUrls videoUrls;
 
   @override
   _VideoPlayerScreenState createState() => _VideoPlayerScreenState();
@@ -40,39 +40,56 @@ enum SeekDirection {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     with TickerProviderStateMixin {
-  late VideoPlayerController _videoPlayerController;
   final ChromeSafariBrowser browser = ChromeSafariBrowser();
-  bool _showControls = true;
-  Timer? _hideControlsTimer;
-  bool _isFullscreen = false;
-  String gifUrl = '';
-  String nonLinearClickThroughUrl = '';
-  bool showAd = true;
-  bool showForward = false;
-  bool showBackward = false;
-  late double playbackSpeed;
+  int currentHeightFactorIndex = 0;
+  // double _initialVolumeDrag = 0; // Initial position of vertical drag
+  // double _initialVolume = 0; // Initial volume value
+  double currentVolume = 0;
 
-  List<double> widthFactorValues = [
-    1.0,
-    1.2,
-  ];
+  int currentWidthFactorIndex = 0;
+  String gifUrl = '';
   List<double> heightFactorValues = [
     1.0,
     1.2,
   ];
-  int currentWidthFactorIndex = 0;
-  int currentHeightFactorIndex = 0;
 
-  double get widthFactor => widthFactorValues[currentWidthFactorIndex];
-  double get heightFactor => heightFactorValues[currentHeightFactorIndex];
-  // double _initialVolumeDrag = 0; // Initial position of vertical drag
-  // double _initialVolume = 0; // Initial volume value
-  double currentVolume = 0;
   bool isSliderVisible = false; // Initial visibility state
-  Timer? _sliderTimer; // Timer to hide the slider after a delay
-  Duration _currentPosition = Duration.zero;
+  double maxSpeed = 2.5;
+  String nonLinearClickThroughUrl = '';
+  late double playbackSpeed;
   late String? selectedLink;
   late String selectedQuality = '480p';
+  bool showAd = true;
+  bool showBackward = false;
+  bool showForward = false;
+  TextEditingController speedController = TextEditingController();
+  double steps = 0.25;
+  List<double> widthFactorValues = [
+    1.0,
+    1.2,
+  ];
+
+  Duration _currentPosition = Duration.zero;
+  Timer? _hideControlsTimer;
+  bool _isFullscreen = false;
+  bool _showControls = true;
+  Timer? _sliderTimer; // Timer to hide the slider after a delay
+  late VideoPlayerController _videoPlayerController;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    checkAndResetShowAd();
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController.dispose();
+    _hideControlsTimer?.cancel();
+    VolumeController().removeListener();
+    _sliderTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -101,11 +118,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     checkPrefs();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    checkAndResetShowAd();
-  }
+  double get widthFactor => widthFactorValues[currentWidthFactorIndex];
+
+  double get heightFactor => heightFactorValues[currentHeightFactorIndex];
 
   Future<void> checkPrefs() async {
     final prefs = await SharedPreferences.getInstance();
@@ -156,6 +171,90 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       if (kDebugMode) {
         print('Error fetching and parsing VAST XML: $e');
       }
+    }
+  }
+
+  Future<void> handleClickButton(
+      BuildContext context, String nonLinearClickThroughUrl) async {
+    // launchUrl(
+    //   Uri.parse(nonLinearClickThroughUrl.trim()),
+    // );
+    final prefs = await SharedPreferences.getInstance();
+    inVideoAddLaunch(context, browser, nonLinearClickThroughUrl);
+    await prefs.setBool('showAd', false);
+    setState(() {
+      if (_videoPlayerController.value.isPlaying) {
+        _videoPlayerController.pause();
+      }
+      showAd = prefs
+          .getBool('showAd')!; // Set showAd to false when the button is clicked
+    });
+    // Start a timer to reset showAd to true after 5 minutes
+    if (kDebugMode) {
+      print('handleShowAd: $showAd');
+    }
+  }
+
+  Future<void> checkAndResetShowAd() async {
+    final prefs = await SharedPreferences.getInstance();
+    final showAdTimestamp = prefs.getInt('showAdTimestamp') ?? 0;
+    final currentTime = DateTime.now().millisecondsSinceEpoch;
+
+    if (showAdTimestamp == 0 ||
+        currentTime - showAdTimestamp >= (20 * 60 * 1000)) {
+      await prefs.setBool('showAd', true);
+      setState(() {
+        showAd = true;
+      });
+      if (kDebugMode) {
+        print('checkResetShowAd: $showAd');
+      }
+    }
+  }
+
+  Future<void> changeVideoQuality(String quality) async {
+    switch (quality) {
+      case '240p':
+        selectedLink = widget.videoUrls.link240p;
+        break;
+      case '360p':
+        selectedLink = widget.videoUrls.link360p;
+        break;
+      case '480p':
+        selectedLink = widget.videoUrls.link480p;
+        break;
+      case '720p':
+        selectedLink = widget.videoUrls.link720p;
+        break;
+      case '1080p':
+        selectedLink = widget.videoUrls.link1080p;
+        break;
+      case '4k':
+        selectedLink = widget.videoUrls.fourk;
+        break;
+    }
+
+    if (selectedLink != null) {
+      // Initialize the new controller with the selected quality URL
+      final newController = VideoPlayerController.networkUrl(
+        Uri.parse(selectedLink!),
+      );
+
+      // Initialize and seek to the stored playback position
+      await newController.initialize();
+      await newController.seekTo(_currentPosition);
+      // newController.setLooping(true);
+      newController.play();
+      // newController.setPlaybackSpeed(speed)
+
+      // Dispose the old controller
+      await _videoPlayerController.dispose();
+      setState(() {
+        _videoPlayerController = newController;
+        selectedQuality = quality;
+      });
+      // Update the selected quality and controller
+      // print(selectedLink);
     }
   }
 
@@ -308,44 +407,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     });
   }
 
-  Future<void> handleClickButton(
-      BuildContext context, String nonLinearClickThroughUrl) async {
-    // launchUrl(
-    //   Uri.parse(nonLinearClickThroughUrl.trim()),
-    // );
-    final prefs = await SharedPreferences.getInstance();
-    inVideoAddLaunch(context, browser, nonLinearClickThroughUrl);
-    await prefs.setBool('showAd', false);
-    setState(() {
-      if (_videoPlayerController.value.isPlaying) {
-        _videoPlayerController.pause();
-      }
-      showAd = prefs
-          .getBool('showAd')!; // Set showAd to false when the button is clicked
-    });
-    // Start a timer to reset showAd to true after 5 minutes
-    if (kDebugMode) {
-      print('handleShowAd: $showAd');
-    }
-  }
-
-  Future<void> checkAndResetShowAd() async {
-    final prefs = await SharedPreferences.getInstance();
-    final showAdTimestamp = prefs.getInt('showAdTimestamp') ?? 0;
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
-
-    if (showAdTimestamp == 0 ||
-        currentTime - showAdTimestamp >= (20 * 60 * 1000)) {
-      await prefs.setBool('showAd', true);
-      setState(() {
-        showAd = true;
-      });
-      if (kDebugMode) {
-        print('checkResetShowAd: $showAd');
-      }
-    }
-  }
-
   Future<void> _showQualityOptions(BuildContext context) async {
     if (kDebugMode) {
       print('Showing quality options');
@@ -404,52 +465,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
   }
 
-  Future<void> changeVideoQuality(String quality) async {
-    switch (quality) {
-      case '240p':
-        selectedLink = widget.videoUrls.link240p;
-        break;
-      case '360p':
-        selectedLink = widget.videoUrls.link360p;
-        break;
-      case '480p':
-        selectedLink = widget.videoUrls.link480p;
-        break;
-      case '720p':
-        selectedLink = widget.videoUrls.link720p;
-        break;
-      case '1080p':
-        selectedLink = widget.videoUrls.link1080p;
-        break;
-      case '4k':
-        selectedLink = widget.videoUrls.fourk;
-        break;
-    }
-
-    if (selectedLink != null) {
-      // Initialize the new controller with the selected quality URL
-      final newController = VideoPlayerController.networkUrl(
-        Uri.parse(selectedLink!),
-      );
-
-      // Initialize and seek to the stored playback position
-      await newController.initialize();
-      await newController.seekTo(_currentPosition);
-      // newController.setLooping(true);
-      newController.play();
-      // newController.setPlaybackSpeed(speed)
-
-      // Dispose the old controller
-      await _videoPlayerController.dispose();
-      setState(() {
-        _videoPlayerController = newController;
-        selectedQuality = quality;
-      });
-      // Update the selected quality and controller
-      // print(selectedLink);
-    }
-  }
-
   ListTile _buildSettingsOption(
       String title, String emoji, String description) {
     return ListTile(
@@ -489,9 +504,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     }
   }
 
-  TextEditingController speedController = TextEditingController();
-  double steps = 0.25;
-  double maxSpeed = 2.5;
   void _showPlaybackSpeedBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -861,20 +873,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                 id: widget.id,
                 isFullScreen: _isFullscreen,
               ),
+              
             )
           else
             const SizedBox.shrink()
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _videoPlayerController.dispose();
-    _hideControlsTimer?.cancel();
-    VolumeController().removeListener();
-    _sliderTimer?.cancel();
-    super.dispose();
   }
 }

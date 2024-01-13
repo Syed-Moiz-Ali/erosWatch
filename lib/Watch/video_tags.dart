@@ -75,7 +75,9 @@ class _VideoTagsState extends State<VideoTagsContainer> {
     }
     final filteredContent =
         tagss.where((tag) => !tag.tagTitle.contains('...')).toList();
-    return Row(
+    return isLoading == true
+        ? const SizedBox.shrink()
+        : Row(
       children: [
         Expanded(
           child: ListView.builder(

@@ -48,7 +48,7 @@ class _ContainerState extends State<ChannelContainer> {
           shape: BoxShape.circle,
         ),
         child: FloatingActionButton(
-          heroTag: 'float',
+          // heroTag: 'float',
           onPressed: _openMenu,
           backgroundColor: Colors.blue,
           child: const Icon(

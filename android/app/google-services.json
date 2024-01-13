@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "6042998377",
+    "project_id": "eroswatch-b1905",
+    "storage_bucket": "eroswatch-b1905.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:6042998377:android:2b5e5764dff5eb8e6474f8",
+        "android_client_info": {
+          "package_name": "com.eroswatch.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCE5mIuXr2QDjl_PDmIdnmHxjihdcrjF0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

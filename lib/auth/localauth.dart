@@ -5,6 +5,9 @@ import 'package:eroswatch/videos_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../model/demo/demo.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -23,6 +26,8 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _authenticate(BuildContext context) async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    String? baseUrl = _prefs.getString('baseUrl');
     bool authenticated = false;
     try {
       authenticated = await _localAuthentication.authenticate(
@@ -46,15 +51,22 @@ class _AuthPageState extends State<AuthPage> {
     }
 
     if (authenticated) {
-      // Navigate to the authenticated content
+      // if (baseUrl != null && baseUrl.contains('demo')) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) =>
-              // const UpdateScreen(),
-              const VideoScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => DemoPage()),
       );
+      // } else {
+      // Navigator.pushReplacement(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) =>
+      //         // const UpdateScreen(),
+      //         const VideoScreen(),
+      //   ),
+      // );
+      // }
+      // Navigate to the authenticated content
     }
   }
 

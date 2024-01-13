@@ -38,7 +38,7 @@ class _TagsContainerState extends State<TagsContainer> {
           shape: BoxShape.circle,
         ),
         child: FloatingActionButton(
-          heroTag: 'float',
+          // heroTag: 'float',
           onPressed: _openMenu,
           backgroundColor: Colors.blue,
           child: const Icon(

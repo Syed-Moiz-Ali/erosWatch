@@ -18,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
 
     // Call the navigateToSecondScreen function after five seconds
-    Future.delayed(const Duration(seconds: 5), navigateToSecondScreen);
+    Future.delayed(const Duration(seconds: 3), navigateToSecondScreen);
   }
 
   // Function to navigate to the second screen
@@ -46,13 +46,10 @@ class _SplashScreenState extends State<SplashScreen>
       body: Stack(
         children: [
           Center(
-            child: Hero(
-              tag: 'logo', // Add a unique tag for the Hero animation
-              child: Image.asset(
-                'assets/images/logo.jpg',
-                width: 320,
-                height: 220,
-              ),
+            child: Image.asset(
+              'assets/images/logo.jpg',
+              width: 320,
+              height: 220,
             ),
             // Row(
             //   children: [

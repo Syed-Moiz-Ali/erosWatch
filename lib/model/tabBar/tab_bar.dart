@@ -15,7 +15,7 @@ class TabBarContainer extends StatefulWidget {
 }
 
 class _TabBarContainerState extends State<TabBarContainer> {
-  String _selectedType = 'trending';
+  String _selectedType = 'trending_videos';
   Key? _pageKey = UniqueKey(); // Key to force page refresh
 
   // final List<Widget> _pages = [
@@ -33,6 +33,23 @@ class _TabBarContainerState extends State<TabBarContainer> {
     // _pages[1] = const PageScreen(type: 'popular');
     // _pages[2] = const PageScreen(type: 'upcoming');
     // _pages[3] = const PageScreen(type: 'new');
+  }
+
+  switchCase(text) {
+    switch (text) {
+      case 'Trending':
+        return 'trending_videos';
+
+      case 'Popular':
+        return 'most_popular';
+      case 'Upcoming':
+        return 'upcoming';
+      case 'New':
+        return 'new_videos';
+
+      default:
+        return 'trending_videos';
+    }
   }
 
   @override
@@ -58,7 +75,7 @@ class _TabBarContainerState extends State<TabBarContainer> {
           shape: BoxShape.circle,
         ),
         child: FloatingActionButton(
-          heroTag: 'float',
+          // heroTag: 'float',
           onPressed: _openMenu,
           backgroundColor: Colors.blue,
           child: const Icon(
@@ -96,7 +113,7 @@ class _TabBarContainerState extends State<TabBarContainer> {
     ).then((value) {
       if (value != null) {
         setState(() {
-          _selectedType = value.toLowerCase(); // Update the selected type
+          _selectedType = switchCase(value); // Update the selected type
           _pageKey = UniqueKey();
         });
         if (kDebugMode) {
@@ -142,13 +159,13 @@ class _TabBarContainerState extends State<TabBarContainer> {
 
   int get _selectedTabIndex {
     switch (_selectedType) {
-      case 'trending':
+      case 'trending_videos':
         return 0;
-      case 'popular':
+      case 'most_popular':
         return 1;
       case 'upcoming':
         return 2;
-      case 'new':
+      case 'new_videos':
         return 3;
       default:
         return 0; // Default to the first tab

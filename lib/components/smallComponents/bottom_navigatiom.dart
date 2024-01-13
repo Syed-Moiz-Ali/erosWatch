@@ -20,8 +20,8 @@ class _BottomNavigationState extends State<BottomNavigation> {
 
     return Positioned(
       bottom: 10,
-      left: 20,
-      right: 20,
+      left: 15,
+      right: 15,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.blue,
@@ -35,10 +35,10 @@ class _BottomNavigationState extends State<BottomNavigation> {
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        // padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
         child: widget.type == ''
             ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   buildIconButtonWithText(
                     Icons.home,
@@ -133,46 +133,45 @@ class _BottomNavigationState extends State<BottomNavigation> {
 
   Widget buildIconButtonWithText(
       IconData icon, bool isSelected, String label, VoidCallback onPressed) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ElevatedButton(
-            onPressed: onPressed,
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(2000),
-              ),
-              backgroundColor: !isSelected ? Colors.blue : Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              shadowColor: Colors.transparent,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ElevatedButton(
+          onPressed: onPressed,
+          
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(2000),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 23,
-                  color: !isSelected ? Colors.white : Colors.blue,
-                ),
-                Visibility(
-                  visible: isSelected,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text(
-                      label,
-                      style: const TextStyle(
-                          color: Colors.blue,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold),
-                    ),
+            backgroundColor: !isSelected ? Colors.blue : Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            shadowColor: Colors.transparent,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 23,
+                color: !isSelected ? Colors.white : Colors.blue,
+              ),
+              Visibility(
+                visible: isSelected,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                        color: Colors.blue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

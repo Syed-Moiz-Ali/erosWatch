@@ -39,7 +39,10 @@ class _FavCardState extends State<FavCard> {
   void initState() {
     super.initState();
     _loadData();
-    _startTimer(); // Start the timer when the widget is created
+    _startTimer();
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      _loadData();
+    });
   }
 
   // Future loadFavorites() async {
@@ -99,6 +102,7 @@ class _FavCardState extends State<FavCard> {
         _showLoadingIndicator = false;
       });
     }
+    setState(() {});
   }
 
   @override

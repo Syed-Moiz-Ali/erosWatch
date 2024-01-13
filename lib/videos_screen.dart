@@ -1,5 +1,6 @@
+// ignore_for_file: avoid_print
+
 import 'package:eroswatch/model/setting/setting_page.dart';
-import 'package:eroswatch/services/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,10 @@ import 'package:eroswatch/model/favorites/fav_screen.dart';
 import 'package:eroswatch/components/container/container_screen.dart';
 import 'package:eroswatch/model/tabBar/tab_bar.dart';
 import 'package:eroswatch/model/tags/tags_container.dart';
+
+import 'components/api/api_service.dart';
+import 'components/bottomNavigator.dart';
+import 'helper/videos.dart';
 // part 'components/bottom_navigatiom.dart';
 
 class VideoScreen extends StatefulWidget {
@@ -33,7 +38,7 @@ class _VideoScreenState extends State<VideoScreen>
   @override
   void initState() {
     super.initState();
-    setUserDetails();
+    // setUserDetails();
     _scrollController.addListener(() {
       setState(() {});
     });
@@ -42,17 +47,19 @@ class _VideoScreenState extends State<VideoScreen>
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+    apiTags = APITags();
+    fetchTags();
   }
 
-  Future<void> setUserDetails() async {
-    final prefs = await SharedPreferences.getInstance();
-    final promise = await account.get();
-    await prefs.setString('userEmail', promise.email);
-    await prefs.setString('userName', promise.name);
-    if (kDebugMode) {
-      print('userDetails has been set sucessfully');
-    }
-  }
+  // Future<void> setUserDetails() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final promise = await account.get();
+  //   await prefs.setString('userEmail', promise.email);
+  //   await prefs.setString('userName', promise.name);
+  //   if (kDebugMode) {
+  //     print('userDetails has been set sucessfully');
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -80,6 +87,8 @@ class _VideoScreenState extends State<VideoScreen>
   void _search() {
     String searchTerm = _searchController.text.trim();
     if (searchTerm.isNotEmpty) {
+      // _searchController.clear();
+      _isSearching = !_isSearching;
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -87,6 +96,62 @@ class _VideoScreenState extends State<VideoScreen>
         ),
       );
     }
+  }
+
+  late APITags apiTags;
+  List<String> allSuggestions = [];
+  List<String> suggestions = [];
+  bool isLoading = false;
+  final int extraItems = 4;
+
+  List bottomNavigatorItmes = [
+    {'title': 'Home', 'icon': Icons.home, 'index': 0},
+    {'title': 'Channels', 'icon': Icons.chat_bubble_rounded, 'index': 1},
+    {'title': 'Stars', 'icon': Icons.star_outline_outlined, 'index': 2},
+    {'title': 'Favorites', 'icon': Icons.favorite, 'index': 3},
+    {'title': 'Tags', 'icon': Icons.tag, 'index': 4},
+  ];
+  Future<void> fetchTags() async {
+    if (isLoading) return;
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final List<Tags> suggestion = await apiTags.fetchWallpapers();
+
+      setState(() {
+        for (var sugg in suggestion) {
+          allSuggestions.add(sugg.title);
+        }
+
+        isLoading = false;
+      });
+      // print(tags);
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      if (kDebugMode) {
+        print('Failed to load tags: $e');
+      }
+    }
+  }
+
+  void _updateSuggestions(String query) {
+    // Filter the list based on the user's input
+    List<String> data = allSuggestions
+        .where((element) => element.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    setState(() {
+      if (_searchController.text.isEmpty) {
+        suggestions.clear();
+      } else if (_searchController.text.isNotEmpty && suggestions.isEmpty) {
+        suggestions.add("No Data Found");
+      } else {
+        suggestions = data;
+      }
+    });
   }
 
   @override
@@ -122,6 +187,9 @@ class _VideoScreenState extends State<VideoScreen>
                   autofocus: true,
                   controller: _searchController,
                   onSubmitted: (_) => _search(),
+                  onChanged: (value) {
+                    _updateSuggestions(value);
+                  },
                   decoration: InputDecoration(
                     hintText: 'Enter search term',
                     filled: false,
@@ -184,14 +252,11 @@ class _VideoScreenState extends State<VideoScreen>
         backgroundColor: Colors.white,
       ),
 
-      body: Align(
-        alignment: Alignment.bottomCenter,
-        child: Stack(
-          children: [
-            Row(
-              children: [
-                if (screenWidth >= 700)
-                  Expanded(
+      body: Stack(
+        children: [
+          Row(children: [
+            screenWidth >= 700
+                ? Expanded(
                     child: SizedBox(
                       width: 250,
                       height: double.infinity,
@@ -305,95 +370,123 @@ class _VideoScreenState extends State<VideoScreen>
                         ],
                       ),
                     ),
-                  ),
-                Expanded(
-                  flex: screenWidth >= 700 ? 7 : 1,
-                  child: pages[pageIndex],
-                ),
-              ],
-            ),
-            if (screenWidth <= 700)
-              Positioned(
-                bottom: 10,
-                left: 10,
-                right: 10,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(50.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.2),
-                        spreadRadius: 3,
-                        blurRadius: 7,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      buildIconButtonWithText(
-                        Icons.home,
-                        pageIndex == 0,
-                        'Home',
-                        () {
-                          setState(() {
-                            pageIndex = 0;
-                          });
-                        },
-                      ),
-                      buildIconButtonWithText(
-                        Icons.chat_bubble_rounded,
-                        pageIndex == 1,
-                        'Channels',
-                        () {
-                          setState(() {
-                            pageIndex = 1;
-                          });
-                        },
-                      ),
-                      buildIconButtonWithText(
-                        Icons.star_outline_outlined,
-                        pageIndex == 2,
-                        'Stars',
-                        () {
-                          setState(() {
-                            pageIndex = 2;
-                          });
-                        },
-                      ),
-                      buildIconButtonWithText(
-                        Icons.favorite,
-                        pageIndex == 3,
-                        'Favorites',
-                        () {
-                          setState(() {
-                            pageIndex = 3;
-                          });
-                        },
-                      ),
-                      buildIconButtonWithText(
-                        Icons.tag,
-                        pageIndex == 4,
-                        'Tags',
-                        () {
-                          setState(() {
-                            pageIndex = 4;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
+                  )
+                : Expanded(
+                    flex: screenWidth >= 700 ? 7 : 1,
+                    child: IndexedStack(
+                      index: pageIndex,
+                      children: pages,
+                    )),
+          ]),
+          if (suggestions.isNotEmpty) searchSuggestionContainer(),
+          if (screenWidth <= 700) bottomNavigationBarForPhones(),
+        ],
       ),
 
       // pages[pageIndex],
+    );
+  }
+
+  Widget bottomNavigationBarForPhones() {
+    return Positioned(
+        bottom: 10,
+        left: 5,
+        right: 5,
+        child: BottomNavigator(
+          pageIndex: pageIndex,
+          items: bottomNavigatorItmes,
+        ));
+  }
+
+  Positioned searchSuggestionContainer() {
+    return Positioned(
+      top: 0,
+      right: 0,
+      left: 0,
+      child: Container(
+        constraints: const BoxConstraints(maxHeight: 300, minHeight: 0),
+        // height: 300,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(12),
+              bottomRight: Radius.circular(12)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: ListView.builder(
+            shrinkWrap: true,
+            // physics: const NeverScrollableScrollPhysics(),
+            itemCount: suggestions.length,
+            itemBuilder: (context, index) {
+              return suggestionCard(index);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget suggestionCard(int index) {
+    return GestureDetector(
+      onTap: () {
+        // Handle selection from suggestions
+        print('Selected suggestion: ${suggestions[index]}');
+        // You may want to clear the suggestions and update the TextField with the selected suggestion
+        setState(() {
+          _searchController.text = suggestions[index];
+          suggestions.clear();
+          // _isSearching = false;
+        });
+        _search();
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        // decoration: BoxDecoration(
+        //   borderRadius: BorderRadius.circular(12),
+        //   gradient: const LinearGradient(
+        //     begin: Alignment.topLeft,
+        //     end: Alignment.bottomRight,
+        //     colors: [Colors.blue, Colors.lightBlueAccent],
+        //   ),
+        //   boxShadow: [
+        //     BoxShadow(
+        //       color: Colors.grey.withOpacity(0.3),
+        //       spreadRadius: 1,
+        //       blurRadius: 4,
+        //       offset: const Offset(0, 2),
+        //     ),
+        //   ],
+        // ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.search,
+              color: Colors.black,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                suggestions[index],
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

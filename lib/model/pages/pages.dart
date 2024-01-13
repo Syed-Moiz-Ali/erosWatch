@@ -25,7 +25,7 @@ class PageScreen extends StatefulWidget {
 
 class _MyPageSate extends State<PageScreen> {
   late final APIService apiService = APIService(
-    params: widget.id != '' ? "starsVid${widget.id}" : widget.type,
+    params: widget.id != '' ? "${widget.id}" : widget.type,
     newParamForStarAndChannel: widget.type,
     id: widget.id,
   );
@@ -185,7 +185,7 @@ class _MyPageSate extends State<PageScreen> {
   }
 
   void insertRandomAds(List<Videos> wallpapers) {
-    const int numAdsToInsert = 4; // You can adjust this as needed
+    const int numAdsToInsert = 2; // You can adjust this as needed
 
     for (int i = 0; i < numAdsToInsert; i++) {
       final int randomIndex = Random()

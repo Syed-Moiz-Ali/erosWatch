@@ -40,40 +40,37 @@ class ImageComponent extends StatelessWidget {
         : imagePath;
     return Stack(
       children: [
-        Hero(
-          tag: uniqueTag,
-          child: ClipRRect(
-            borderRadius:
-                BorderRadius.circular(title == 'channel' ? 1200000 : 8.0),
-            child: CachedNetworkImage(
-              imageUrl: image,
-              fit: BoxFit.cover,
-              height: title == 'star'
-                  ? 300
-                  : title == 'channel'
-                      ? 150
-                      : double.infinity,
-              width: title == 'channel' ? 150 : double.infinity,
-              errorWidget: (context, url, error) => Stack(children: [
-                Opacity(
-                  opacity: 0.5,
-                  child: Image.asset(
-                    'assets/images/error_image.webp', // Replace with the path to your error image asset
-                    height: title == 'star' ? 300 : 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+        ClipRRect(
+          borderRadius:
+              BorderRadius.circular(title == 'channel' ? 1200000 : 8.0),
+          child: CachedNetworkImage(
+            imageUrl: image,
+            fit: BoxFit.cover,
+            height: title == 'star'
+                ? 300
+                : title == 'channel'
+                    ? 150
+                    : double.infinity,
+            width: title == 'channel' ? 150 : double.infinity,
+            errorWidget: (context, url, error) => Stack(children: [
+              Opacity(
+                opacity: 0.5,
+                child: Image.asset(
+                  'assets/images/error_image.webp', // Replace with the path to your error image asset
+                  height: title == 'star' ? 300 : 150,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                 ),
-                const Center(
-                  child: Icon(Icons.error),
-                )
-              ]),
-              // color: Colors.blue38,
-              placeholderFadeInDuration: const Duration(milliseconds: 700),
-              useOldImageOnUrlChange: true,
+              ),
+              const Center(
+                child: Icon(Icons.error),
+              )
+            ]),
+            // color: Colors.blue38,
+            placeholderFadeInDuration: const Duration(milliseconds: 700),
+            useOldImageOnUrlChange: true,
 
-              // errorWidget: (context, url, error) => const Icon(Icons.error),
-            ),
+            // errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
         ),
         // if (title != 'star' && title != 'channel')

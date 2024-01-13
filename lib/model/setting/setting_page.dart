@@ -21,7 +21,7 @@ class _SettingScreenState extends State<SettingScreen> {
   String updateemail = '';
   late String phoneNumber;
   String updatephoneNumber = '';
-  bool isLoading = true;
+  bool isLoading = false;
   bool isSubscribed = false;
   late bool isTextFieldEnabled;
   Uint8List? avatarImage;
@@ -51,68 +51,68 @@ class _SettingScreenState extends State<SettingScreen> {
     });
   }
 
-  void loadUsers() async {
-    try {
-      var promise = await account.get();
-      var userEmail = promise.email;
-      var userName = promise.name;
+  // void loadUsers() async {
+  //   try {
+  //     var promise = await account.get();
+  //     var userEmail = promise.email;
+  //     var userName = promise.name;
 
-      setState(() {
-        name = userName;
-        email = userEmail;
-        isLoading = false;
-      });
-      fetchAvatar();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error fetching users: $e');
-      }
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
+  //     setState(() {
+  //       name = userName;
+  //       email = userEmail;
+  //       isLoading = false;
+  //     });
+  //     fetchAvatar();
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print('Error fetching users: $e');
+  //     }
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
 
-  Future<void> updateName() async {
-    try {
-      await account.updateName(name: name);
+  // Future<void> updateName() async {
+  //   try {
+  //     await account.updateName(name: name);
 
-      if (kDebugMode) {
-        print('name update to $name successfully');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Authentication failed: $e');
-      }
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Name Update Failed'),
-          content: const Text('Please check your name format'),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
+  //     if (kDebugMode) {
+  //       print('name update to $name successfully');
+  //     }
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print('Authentication failed: $e');
+  //     }
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) => AlertDialog(
+  //         title: const Text('Name Update Failed'),
+  //         content: const Text('Please check your name format'),
+  //         actions: <Widget>[
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               Navigator.pop(context);
+  //             },
+  //             child: const Text('OK'),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
+  // }
 
-  Future<void> fetchAvatar() async {
-    var avatar = await avatars.getInitials(
-      name: name,
-      width: 120,
-      height: 120,
-    );
+  // Future<void> fetchAvatar() async {
+  //   var avatar = await avatars.getInitials(
+  //     name: name,
+  //     width: 120,
+  //     height: 120,
+  //   );
 
-    setState(() {
-      avatarImage = avatar;
-    });
-  }
+  //   setState(() {
+  //     avatarImage = avatar;
+  //   });
+  // }
 
   void _toggleTextFieldEnabled() {
     setState(() {
@@ -120,53 +120,53 @@ class _SettingScreenState extends State<SettingScreen> {
     });
   }
 
-  Future<void> _verifyEmail() async {
-    // Email verification logic
+  // Future<void> _verifyEmail() async {
+  //   // Email verification logic
 
-    await account
-        .createVerification(
-      url: 'https://cloud.appwrite.io/v1',
-    )
-        .then((response) {
-      if (kDebugMode) {
-        print(response);
-      }
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Email Verification'),
-          content: const Text('Verification link sent to your email.'),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }).catchError((error) {
-      if (kDebugMode) {
-        print(error.response);
-      }
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Error'),
-          content: const Text('Verification Link Not Sent'),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    });
-  }
+  //   await account
+  //       .createVerification(
+  //     url: 'https://cloud.appwrite.io/v1',
+  //   )
+  //       .then((response) {
+  //     if (kDebugMode) {
+  //       print(response);
+  //     }
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) => AlertDialog(
+  //         title: const Text('Email Verification'),
+  //         content: const Text('Verification link sent to your email.'),
+  //         actions: <Widget>[
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               Navigator.pop(context);
+  //             },
+  //             child: const Text('OK'),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }).catchError((error) {
+  //     if (kDebugMode) {
+  //       print(error.response);
+  //     }
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) => AlertDialog(
+  //         title: const Text('Error'),
+  //         content: const Text('Verification Link Not Sent'),
+  //         actions: <Widget>[
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               Navigator.pop(context);
+  //             },
+  //             child: const Text('OK'),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   });
+  // }
 
 // void deleteAccount() async {
 
@@ -270,7 +270,8 @@ class _SettingScreenState extends State<SettingScreen> {
       return sayLoginToUser(); // You can also use Text('') if you prefer
     } else {
       // Return the Card widget with form fields
-      return usersDataInfo(avatarWidget);
+      return const SizedBox.shrink();
+      // return usersDataInfo(avatarWidget);
     }
   }
 
@@ -298,7 +299,7 @@ class _SettingScreenState extends State<SettingScreen> {
             },
           ),
         ),
-        SizedBox(height: 200.0), // Add spacing
+        const SizedBox(height: 200.0), // Add spacing
         const Align(
           // Center the coming soon message and icon
           alignment: Alignment.center,
@@ -335,291 +336,292 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-  Column usersDataInfo(Widget avatarWidget) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        const SizedBox(height: 16.0),
-        Center(child: avatarWidget),
-        const SizedBox(height: 32.0),
-        Card(
-          elevation: 2.0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Personal Information',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16.0),
-                TextField(
-                  enabled: isTextFieldEnabled,
-                  keyboardType: TextInputType.name,
-                  decoration: InputDecoration(
-                    labelText: name,
-                    prefixIcon: const Icon(Icons.person),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isTextFieldEnabled ? Icons.lock_open : Icons.lock,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {},
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Colors.grey,
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    labelStyle: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      updatename = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                TextField(
-                  enabled: isTextFieldEnabled,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    labelText: phoneNumber,
-                    prefixIcon: const Icon(Icons.phone),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isTextFieldEnabled ? Icons.lock_open : Icons.lock,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {},
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Colors.grey,
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    labelStyle: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      updatephoneNumber = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        enabled: isTextFieldEnabled,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          labelText: email,
-                          prefixIcon: const Icon(Icons.email),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              isTextFieldEnabled ? Icons.lock_open : Icons.lock,
-                              color: Colors.black,
-                            ),
-                            onPressed: () {},
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.grey,
-                              width: 1.5,
-                            ),
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Colors.black,
-                              width: 1.5,
-                            ),
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          labelStyle: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            updateemail = value;
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    ElevatedButton(
-                      onPressed: _verifyEmail,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                      child: const Text(
-                        'Verify',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 32.0),
-        ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-          ),
-          child: const Text(
-            'Save Changes',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16.0),
-        ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(3.0),
-            ),
-          ),
-          child: const Text(
-            'Delete Account',
-            style: TextStyle(
-              color: Colors.red,
-              fontSize: 16,
-            ),
-          ),
-        ),
+  // Column usersDataInfo(Widget avatarWidget) {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.stretch,
+  //     children: <Widget>[
+  //       const SizedBox(height: 16.0),
+  //       Center(child: avatarWidget),
+  //       const SizedBox(height: 32.0),
+  //       Card(
+  //         elevation: 2.0,
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(10.0),
+  //         ),
+  //         child: Padding(
+  //           padding: const EdgeInsets.all(16.0),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.stretch,
+  //             children: [
+  //               const Text(
+  //                 'Personal Information',
+  //                 style: TextStyle(
+  //                   fontSize: 18,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 16.0),
+  //               TextField(
+  //                 enabled: isTextFieldEnabled,
+  //                 keyboardType: TextInputType.name,
+  //                 decoration: InputDecoration(
+  //                   labelText: name,
+  //                   prefixIcon: const Icon(Icons.person),
+  //                   suffixIcon: IconButton(
+  //                     icon: Icon(
+  //                       isTextFieldEnabled ? Icons.lock_open : Icons.lock,
+  //                       color: Colors.black,
+  //                     ),
+  //                     onPressed: () {},
+  //                   ),
+  //                   enabledBorder: OutlineInputBorder(
+  //                     borderSide: const BorderSide(
+  //                       color: Colors.grey,
+  //                       width: 1.5,
+  //                     ),
+  //                     borderRadius: BorderRadius.circular(10.0),
+  //                   ),
+  //                   focusedBorder: OutlineInputBorder(
+  //                     borderSide: const BorderSide(
+  //                       color: Colors.black,
+  //                       width: 1.5,
+  //                     ),
+  //                     borderRadius: BorderRadius.circular(10.0),
+  //                   ),
+  //                   labelStyle: const TextStyle(
+  //                     color: Colors.black,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //                 onChanged: (value) {
+  //                   setState(() {
+  //                     updatename = value;
+  //                   });
+  //                 },
+  //               ),
+  //               const SizedBox(height: 16.0),
+  //               TextField(
+  //                 enabled: isTextFieldEnabled,
+  //                 keyboardType: TextInputType.phone,
+  //                 decoration: InputDecoration(
+  //                   labelText: phoneNumber,
+  //                   prefixIcon: const Icon(Icons.phone),
+  //                   suffixIcon: IconButton(
+  //                     icon: Icon(
+  //                       isTextFieldEnabled ? Icons.lock_open : Icons.lock,
+  //                       color: Colors.black,
+  //                     ),
+  //                     onPressed: () {},
+  //                   ),
+  //                   enabledBorder: OutlineInputBorder(
+  //                     borderSide: const BorderSide(
+  //                       color: Colors.grey,
+  //                       width: 1.5,
+  //                     ),
+  //                     borderRadius: BorderRadius.circular(10.0),
+  //                   ),
+  //                   focusedBorder: OutlineInputBorder(
+  //                     borderSide: const BorderSide(
+  //                       color: Colors.black,
+  //                       width: 1.5,
+  //                     ),
+  //                     borderRadius: BorderRadius.circular(10.0),
+  //                   ),
+  //                   labelStyle: const TextStyle(
+  //                     color: Colors.black,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //                 onChanged: (value) {
+  //                   setState(() {
+  //                     updatephoneNumber = value;
+  //                   });
+  //                 },
+  //               ),
+  //               const SizedBox(height: 16.0),
+  //               Row(
+  //                 children: [
+  //                   Expanded(
+  //                     child: TextField(
+  //                       enabled: isTextFieldEnabled,
+  //                       keyboardType: TextInputType.emailAddress,
+  //                       decoration: InputDecoration(
+  //                         labelText: email,
+  //                         prefixIcon: const Icon(Icons.email),
+  //                         suffixIcon: IconButton(
+  //                           icon: Icon(
+  //                             isTextFieldEnabled ? Icons.lock_open : Icons.lock,
+  //                             color: Colors.black,
+  //                           ),
+  //                           onPressed: () {},
+  //                         ),
+  //                         enabledBorder: OutlineInputBorder(
+  //                           borderSide: const BorderSide(
+  //                             color: Colors.grey,
+  //                             width: 1.5,
+  //                           ),
+  //                           borderRadius: BorderRadius.circular(10.0),
+  //                         ),
+  //                         focusedBorder: OutlineInputBorder(
+  //                           borderSide: const BorderSide(
+  //                             color: Colors.black,
+  //                             width: 1.5,
+  //                           ),
+  //                           borderRadius: BorderRadius.circular(10.0),
+  //                         ),
+  //                         labelStyle: const TextStyle(
+  //                           color: Colors.black,
+  //                           fontWeight: FontWeight.bold,
+  //                         ),
+  //                       ),
+  //                       onChanged: (value) {
+  //                         setState(() {
+  //                           updateemail = value;
+  //                         });
+  //                       },
+  //                     ),
+  //                   ),
+  //                   const SizedBox(width: 8.0),
+  //                   ElevatedButton(
+  //                     onPressed: _verifyEmail,
+  //                     style: ElevatedButton.styleFrom(
+  //                       backgroundColor: Colors.blue,
+  //                       shape: RoundedRectangleBorder(
+  //                         borderRadius: BorderRadius.circular(10.0),
+  //                       ),
+  //                     ),
+  //                     child: const Text(
+  //                       'Verify',
+  //                       style: TextStyle(fontSize: 16),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //       const SizedBox(height: 32.0),
+  //       ElevatedButton(
+  //         onPressed: () {},
+  //         style: ElevatedButton.styleFrom(
+  //           backgroundColor: Colors.blue,
+  //           padding: const EdgeInsets.symmetric(vertical: 16.0),
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(10.0),
+  //           ),
+  //         ),
+  //         child: const Text(
+  //           'Save Changes',
+  //           style: TextStyle(
+  //             fontSize: 16,
+  //             color: Colors.white,
+  //           ),
+  //         ),
+  //       ),
+  //       const SizedBox(height: 16.0),
+  //       ElevatedButton(
+  //         onPressed: () {},
+  //         style: ElevatedButton.styleFrom(
+  //           backgroundColor: Colors.black,
+  //           shape: RoundedRectangleBorder(
+  //             borderRadius: BorderRadius.circular(3.0),
+  //           ),
+  //         ),
+  //         child: const Text(
+  //           'Delete Account',
+  //           style: TextStyle(
+  //             color: Colors.red,
+  //             fontSize: 16,
+  //           ),
+  //         ),
+  //       ),
 
-        const SizedBox(height: 16.0),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Column(
-            children: [
-              const Text(
-                'Contact Us',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 7.0),
-              GestureDetector(
-                onTap: () {
-                  _launchEmailApp(contactEmail);
-                },
-                child: Image.asset(
-                  'assets/images/gmail.png',
-                  width: 50,
-                  height: 50,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16.0),
-        // ListTile(
-        //   title: const Text(
-        //     'NSFW Content',
-        //     style: TextStyle(
-        //       fontSize: 18,
-        //       fontWeight: FontWeight.bold,
-        //     ),
-        //   ),
-        //   trailing: Switch(
-        //     value: isNSFWEnabled,
-        //     onChanged: (newValue) {
-        //       setState(() {
-        //         isNSFWEnabled = newValue;
-        //       });
+  //       const SizedBox(height: 16.0),
+  //       Align(
+  //         alignment: Alignment.centerLeft,
+  //         child: Column(
+  //           children: [
+  //             const Text(
+  //               'Contact Us',
+  //               style: TextStyle(
+  //                 fontSize: 18,
+  //                 fontWeight: FontWeight.bold,
+  //               ),
+  //             ),
+  //             const SizedBox(height: 7.0),
+  //             GestureDetector(
+  //               onTap: () {
+  //                 _launchEmailApp(contactEmail);
+  //               },
+  //               child: Image.asset(
+  //                 'assets/images/gmail.png',
+  //                 width: 50,
+  //                 height: 50,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //       const SizedBox(height: 16.0),
+  //       // ListTile(
+  //       //   title: const Text(
+  //       //     'NSFW Content',
+  //       //     style: TextStyle(
+  //       //       fontSize: 18,
+  //       //       fontWeight: FontWeight.bold,
+  //       //     ),
+  //       //   ),
+  //       //   trailing: Switch(
+  //       //     value: isNSFWEnabled,
+  //       //     onChanged: (newValue) {
+  //       //       setState(() {
+  //       //         isNSFWEnabled = newValue;
+  //       //       });
 
-        //       // Toggle the NSFW status
-        //       toggleNSFW();
-        //     },
-        //   ),
-        // ),
-        ListTile(
-          title: const Text(
-            'Set Screen lock',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          trailing: Switch(
-            value: isLocked,
-            onChanged: (newValue) {
-              setState(() {
-                isLocked = newValue;
-              });
+  //       //       // Toggle the NSFW status
+  //       //       toggleNSFW();
+  //       //     },
+  //       //   ),
+  //       // ),
+  //       ListTile(
+  //         title: const Text(
+  //           'Set Screen lock',
+  //           style: TextStyle(
+  //             fontSize: 18,
+  //             fontWeight: FontWeight.bold,
+  //           ),
+  //         ),
+  //         trailing: Switch(
+  //           value: isLocked,
+  //           onChanged: (newValue) {
+  //             setState(() {
+  //               isLocked = newValue;
+  //             });
 
-              // Toggle the NSFW status
-              toggleLock(newValue);
-            },
-          ),
-        ),
-      ],
-    );
-  }
+  //             // Toggle the NSFW status
+  //             toggleLock(newValue);
+  //           },
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
     // print(isSubscribed);
-    final result = avatars.getInitials();
-    if (kDebugMode) {
-      print(result);
-    }
+    // final result = avatars.getInitials();
+    // if (kDebugMode) {
+    //   print(result);
+    // }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isLoading ? 'Loading...' : '$name\'s Profile',
-          style: const TextStyle(
+        title: const Text(
+          // isLoading ? 'Loading...' : '$name\'s Profile',
+          'Profile',
+          style: TextStyle(
             color: Colors.blue,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -651,28 +653,28 @@ class _SettingScreenState extends State<SettingScreen> {
                 child: conditionalChanger(),
               ),
             ),
-      bottomNavigationBar: BottomAppBar(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.info,
-                color: Colors.grey,
-              ),
-              const SizedBox(width: 8.0),
-              Text(
-                'version: ${packageInfo.version}',
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      // bottomNavigationBar: BottomAppBar(
+      //   child: Padding(
+      //     padding: const EdgeInsets.all(16.0),
+      //     child: Row(
+      //       mainAxisAlignment: MainAxisAlignment.center,
+      //       children: [
+      //         const Icon(
+      //           Icons.info,
+      //           color: Colors.grey,
+      //         ),
+      //         const SizedBox(width: 8.0),
+      //         Text(
+      //           'version: ${packageInfo.version}',
+      //           style: const TextStyle(
+      //             color: Colors.grey,
+      //             fontSize: 14,
+      //           ),
+      //         ),
+      //       ],
+      //     ),
+      //   ),
+      // ),
     );
   }
 }

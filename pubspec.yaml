@@ -31,9 +31,13 @@ dependencies:
   appwrite: ^11.0.0
   auto_orientation: ^2.3.1
   cached_network_image: ^3.0.0
+  change_app_package_name: ^1.1.0
   cupertino_icons: ^1.0.2
   dart_appwrite: ^10.0.0
   dio: ^5.3.2
+  firebase_core: ^2.24.2
+  firebase_database: ^10.3.8
+  firebase_storage: ^11.5.6
   flutter:
     sdk: flutter
   flutter_document_picker: ^5.2.3
@@ -42,7 +46,9 @@ dependencies:
   flutter_inappwebview: ^5.7.2+3
   flutter_launcher_icons: ^0.13.1
   fluttertoast: ^8.2.2
-  http: ^1.0.0
+  http: ^0.13.4
+  http_proxy: ^1.2.1
+  image_picker: ^1.0.7
   lecle_downloads_path_provider: ^ 0.0.2+8
   local_auth: ^2.1.6
   open_filex: ^4.3.2
