@@ -11,7 +11,19 @@ class BottomNavigatorProvider extends ChangeNotifier {
   int mainPageIndex = 0;
 
   setmainPageIndex(val) {
-    pageIndex = val;
+    mainPageIndex = val;
+    notifyListeners();
+  }
+
+  List mainPreviousPagesHistory = [];
+  setMainPreviousPagesHistory(val) {
+    mainPreviousPagesHistory.add(val);
+    notifyListeners();
+  }
+
+  List previousPagesHistory = [];
+  setPreviousPagesHistory(val) {
+    previousPagesHistory.add(val);
     notifyListeners();
   }
 }

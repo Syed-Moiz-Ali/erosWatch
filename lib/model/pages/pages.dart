@@ -25,7 +25,7 @@ class PageScreen extends StatefulWidget {
 
 class _MyPageSate extends State<PageScreen> {
   late final APIService apiService = APIService(
-    params: widget.id != '' ? "${widget.id}" : widget.type,
+    params: widget.id != '' ? widget.id : widget.type,
     newParamForStarAndChannel: widget.type,
     id: widget.id,
   );

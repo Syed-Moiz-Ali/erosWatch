@@ -1,5 +1,5 @@
 // import 'dart:html';
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
 import 'package:eroswatch/components/smallComponents/image_compoenent.dart';
 import 'package:eroswatch/util/utils.dart';
@@ -30,10 +30,12 @@ class _CardScreenState extends State<StarCard> {
   bool changeOnTap = true;
   // final Map<int, bool> _isPlayingMap =
   //     {};
-  final database = ErosWatchDatabase(storageKey: 'stars');
+  var database;
+  var historyDatabase;
   @override
   void initState() {
     super.initState();
+
     loadFavorites();
     // _isPlaying = false;
   }
@@ -72,11 +74,12 @@ class _CardScreenState extends State<StarCard> {
         // print(stars.preview);
 
         return GestureDetector(
-          onTap: () {
+          onTap: () async {
             if (!newImage.contains('spankbang')) {
               handleClickButton(context, widget.link);
             } else {
-              Navigator.push(
+              await historyDatabase.insertStars(stars);
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
@@ -184,6 +187,11 @@ class _CardScreenState extends State<StarCard> {
   }
 
   void loadFavorites() async {
+    setState(() {
+      database = ErosWatchDatabase(storageKey: 'stars', context: context);
+      historyDatabase =
+          ErosWatchDatabase(storageKey: 'historystars', context: context);
+    });
     try {
       final favoritesList = await database.getAllStars();
       setState(() {

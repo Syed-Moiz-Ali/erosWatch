@@ -1,15 +1,15 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first, must_be_immutable
+// ignore_for_file: public_member_api_docs, sort_constructors_first, must_be_immutable, file_names, avoid_print
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/bottom_navigator_provider.dart';
 
 class BottomNavigator extends StatefulWidget {
-  dynamic pageIndex;
+  dynamic type;
   List items;
   BottomNavigator({
     Key? key,
-    this.pageIndex,
+    this.type,
     this.items = const [],
   }) : super(key: key);
 
@@ -116,12 +116,28 @@ class _BottomNavigatorState extends State<BottomNavigator> {
           children: widget.items.map((navigationItem) {
             return buildIconButtonWithText(
               navigationItem['icon'],
-              provider.pageIndex == navigationItem['index'],
+              widget.type == 'main'
+                  ? provider.mainPageIndex == navigationItem['index']
+                  : provider.pageIndex == navigationItem['index'],
               navigationItem['title'],
               () {
                 setState(() {
-                  provider.setPageIndex(navigationItem['index']);
+                  widget.type == 'main'
+                      ? {
+                          provider.setmainPageIndex(navigationItem['index']),
+                          provider.setMainPreviousPagesHistory(
+                              navigationItem['index'])
+                        }
+                      : {
+                          provider.setPageIndex(navigationItem['index']),
+                          provider
+                              .setPreviousPagesHistory(navigationItem['index'])
+                        };
                 });
+                print('mainprovider is ${provider.mainPageIndex}');
+                print(
+                    'mainPreviousPagesHistory is ${provider.mainPreviousPagesHistory}');
+                print('submainprovider is  ${provider.pageIndex}');
               },
             );
           }).toList(),

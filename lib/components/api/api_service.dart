@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, library_prefixes, depend_on_referenced_packages
 
 import 'dart:convert';
 
@@ -7,8 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:html/parser.dart' as htmlParser;
-
-import 'firebase/database.dart';
 
 var headers = {
   "Access-Control-Allow-Origin": "*", // Required for CORS support to work
@@ -183,7 +181,7 @@ class APIStarsDetailVids {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final baseUrl = prefs.getString('baseUrl');
     final String url =
-        '$baseUrl${params}$pageNo/o=$newParamForStarAndChannel/q=all/d=all';
+        '$baseUrl$params$pageNo/o=$newParamForStarAndChannel/q=all/d=all';
 
 // api/search/keyword=:word/:categ/page=:page/q=:qualtiy/d=:duration/p=:date
     final response = await http.get(

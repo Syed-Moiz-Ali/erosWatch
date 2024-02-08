@@ -1,10 +1,12 @@
-// ignore_for_file: must_be_immutable, library_private_types_in_public_api
+// ignore_for_file: must_be_immutable, library_private_types_in_public_api, avoid_print
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
 import 'package:video_player/video_player.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 class VideoPlayerControls extends StatefulWidget {
   final bool isPlaying;
@@ -42,6 +44,7 @@ class VideoPlayerControls extends StatefulWidget {
     required this.title,
     required this.videoUrl,
     required this.showSettingsOptions,
+    tle,
   }) : super(key: key);
 
   @override
@@ -89,6 +92,32 @@ class _VideoPlayerControlsState extends State<VideoPlayerControls> {
     );
   }
 
+  bool isPreviewVisible = false;
+  Image? previewImage;
+  _generatePreviewWidget(newPosition) async {
+    print('jjjjj');
+    try {
+      final uint8list = await VideoThumbnail.thumbnailData(
+            video: widget.videoPlayerController.dataSource,
+            imageFormat: ImageFormat.JPEG,
+            maxWidth:
+                50, // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
+            quality: 10,
+            timeMs: newPosition,
+          ) ??
+          Uint8List(40);
+      print('previewImage is ${uint8list.toString()}');
+      setState(() {
+        previewImage = Image.memory(
+          uint8list,
+          fit: BoxFit.cover,
+        );
+      });
+    } catch (e) {
+      print('the error is $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -98,6 +127,10 @@ class _VideoPlayerControlsState extends State<VideoPlayerControls> {
     Duration remainingDuration = widget.duration - widget.position;
     int remainingMinutes = remainingDuration.inMinutes;
     int remainingSeconds = remainingDuration.inSeconds % 60;
+
+    double progress = widget.duration.inMilliseconds > 0
+        ? widget.position.inMilliseconds / widget.duration.inMilliseconds
+        : 0.0;
 
     // print(_controlsVisible);
     return GestureDetector(
@@ -110,177 +143,159 @@ class _VideoPlayerControlsState extends State<VideoPlayerControls> {
           color: Colors.black.withOpacity(0.4),
           child: SizedBox(
             height: screenHeight,
-            child: Column(
-              mainAxisAlignment: screenWidth > 600
-                  ? MainAxisAlignment.spaceBetween
-                  : MainAxisAlignment.end,
+            child: Stack(
               children: [
-                if (screenWidth > 600)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 28.0, vertical: 5.0),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          size: 30,
-                          color: Colors.white,
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 28.0, vertical: 15.0),
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Row(
+                          children: [
+                            if (screenWidth > 600)
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_back,
+                                  size: 30,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () {
+                                  widget.exitFullscreen();
+                                  // Navigator.pop(context);
+                                },
+                              ),
+                            Expanded(
+                              child: Text(
+                                widget.title,
+                                style: TextStyle(
+                                    fontSize: screenWidth > 600 ? 17 : 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                            )
+                          ],
                         ),
-                        onPressed: () {
-                          widget.exitFullscreen();
-                          // Navigator.pop(context);
-                        },
                       ),
                     ),
-                  ),
-                _controlsVisible == true
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 2.0),
-                                  child: Text(
-                                    "${widget.position.inMinutes}:${(widget.position.inSeconds % 60).toString().padLeft(2, '0')}",
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 12),
-                                  ),
-                                ),
-                                VideoProgressBar(
-                                  duration: widget.duration,
-                                  position: widget.position,
-                                  videoPlayerController:
-                                      widget.videoPlayerController,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 2.0),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        text = !text;
-                                      });
-                                    },
-                                    child: Text(
-                                      text
-                                          ? "$remainingMinutes:${remainingSeconds.toString().padLeft(2, '0')}"
-                                          : "${widget.duration.inMinutes}:${(widget.duration.inSeconds % 60).toString().padLeft(2, '0')}",
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 12),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: screenWidth < 600 ? 5 : 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
+                    _controlsVisible == true
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: Row(
                                   children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 2.0),
+                                      child: Text(
+                                        "${widget.position.inMinutes}:${(widget.position.inSeconds % 60).toString().padLeft(2, '0')}",
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 12),
+                                      ),
+                                    ),
+                                    // VideoProgressBar(
+                                    //   duration: widget.duration,
+                                    //   position: widget.position,
+                                    //   videoPlayerController:
+                                    //       widget.videoPlayerController,
+                                    // ),
+                                    progressBar(screenWidth, progress),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 2.0),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            text = !text;
+                                          });
+                                        },
+                                        child: Text(
+                                          text
+                                              ? "$remainingMinutes:${remainingSeconds.toString().padLeft(2, '0')}"
+                                              : "${widget.duration.inMinutes}:${(widget.duration.inSeconds % 60).toString().padLeft(2, '0')}",
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: screenWidth < 600 ? 5 : 10),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    playForwardBackwardButtons(
+                                        size, screenWidth),
                                     Row(
                                       mainAxisAlignment:
-                                          // screenWidth < 600
-                                          //     ? MainAxisAlignment.spaceAround
-                                          //     :
-                                          MainAxisAlignment.spaceEvenly,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
+                                          MainAxisAlignment.spaceAround,
                                       children: [
                                         IconButton(
-                                          icon: widget.isBuffering
-                                              ? const SizedBox(
-                                                  width: 20,
-                                                  height: 20,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                  ),
-                                                )
-                                              // const SizedBox.shrink()
-                                              : Icon(
-                                                  widget.isPlaying
-                                                      ? Icons.pause
-                                                      : Icons.play_arrow,
-                                                  size: size,
-                                                  color: Colors.white,
-                                                ),
+                                          icon: Icon(
+                                            Icons.fit_screen_outlined,
+                                            size: size - 5,
+                                            color: Colors.white,
+                                          ),
                                           onPressed: _controlsVisible
-                                              ? widget.togglePlayPause
+                                              ? widget.onButtonClick
                                               : null,
                                         ),
                                         SizedBox(
-                                            width: screenWidth < 600 ? 10 : 20),
-                                        // if (screenWidth > 600)
-                                        //   button(() => widget.seekBackward(30),
-                                        //       Icons.replay_30_rounded, size),
-                                        button(() => widget.seekBackward(10),
-                                            Icons.replay_10_rounded, size),
-
-                                        button(() => widget.seekForward(10),
-                                            Icons.forward_10_rounded, size),
-                                        // if (screenWidth > 600)
-                                        //   button(() => widget.seekForward(30),
-                                        //       Icons.forward_30_rounded, size),
+                                            width: screenWidth < 600 ? 5 : 20),
+                                        QualityChangerDropdown(
+                                          showSettingsOptions:
+                                              widget.showSettingsOptions,
+                                        ),
+                                        SizedBox(
+                                            width: screenWidth < 600 ? 5 : 20),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.fullscreen,
+                                            size: size - 5,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: _controlsVisible
+                                              ? toggleFullscreen
+                                              : null,
+                                        ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.fit_screen_outlined,
-                                        size: size - 5,
-                                        color: Colors.white,
-                                      ),
-                                      onPressed: _controlsVisible
-                                          ? widget.onButtonClick
-                                          : null,
-                                    ),
-                                    SizedBox(width: screenWidth < 600 ? 5 : 20),
-                                    QualityChangerDropdown(
-                                      showSettingsOptions:
-                                          widget.showSettingsOptions,
-                                    ),
-                                    SizedBox(width: screenWidth < 600 ? 5 : 20),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.fullscreen,
-                                        size: size - 5,
-                                        color: Colors.white,
-                                      ),
-                                      onPressed: _controlsVisible
-                                          ? toggleFullscreen
-                                          : null,
-                                    ),
-                                  ],
-                                ),
 
-                                // VideoDownloadScreen(
-                                //   videoUrl: widget.videoUrl,
-                                //   title: widget.title,
-                                // ),
-                              ],
-                            ),
-                          ),
-                          // if (screenWidth < 600) const SizedBox(height: 40),
-                        ],
-                      )
-                    : const SizedBox(),
+                                    // VideoDownloadScreen(
+                                    //   videoUrl: widget.videoUrl,
+                                    //   title: widget.title,
+                                    // ),
+                                  ],
+                                ),
+                              ),
+                              // if (screenWidth < 600) const SizedBox(height: 40),
+                            ],
+                          )
+                        : const SizedBox(),
+                  ],
+                ),
+                // if (isPreviewVisible == true)
+                //   Positioned(
+                //     bottom: 100,
+                //     left: 200,
+                //     child: Container(
+                //       height: 50,
+                //       width: 100,
+                //       color: Colors.blue,
+                //       child: previewImage,
+                //     ),
+                //   )
               ],
             ),
           ),
@@ -288,54 +303,62 @@ class _VideoPlayerControlsState extends State<VideoPlayerControls> {
       ),
     );
   }
-}
 
-class VideoProgressBar extends StatelessWidget {
-  final VideoPlayerController videoPlayerController;
-  final Duration duration;
-  final Duration position;
-
-  const VideoProgressBar({
-    Key? key,
-    required this.videoPlayerController,
-    required this.duration,
-    required this.position,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    double progress = duration.inMilliseconds > 0
-        ? position.inMilliseconds / duration.inMilliseconds
-        : 0.0;
-    final screenWidth = MediaQuery.of(context).size.width;
+  Widget progressBar(double screenWidth, double progress) {
     return SizedBox(
+      // color: Colors.red,
       width: screenWidth < 600 ? screenWidth * 0.80 : screenWidth * 0.90,
+      height: 10,
       child: AnimatedBuilder(
-        animation: videoPlayerController,
+        animation: widget.videoPlayerController,
         builder: (context, child) {
           return SliderTheme(
             data: SliderThemeData(
-              thumbColor: Colors.white,
-              activeTrackColor: Colors.white,
-              inactiveTrackColor: Colors.grey,
+              thumbColor: Colors.blue.shade500,
+              activeTrackColor: Colors.blue.withOpacity(0.7),
+              inactiveTrackColor: Colors.blueGrey.withOpacity(0.7),
               trackHeight: 4.0,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 14.0),
-              overlayColor: Colors.white.withOpacity(0.3),
+              overlayColor: Colors.blueGrey.withOpacity(0.3),
             ),
             child: Slider(
               value: progress,
-              onChanged: (newValue) {
+              onChanged: (newValue) async {
                 final newPosition = Duration(
-                  milliseconds: (newValue * duration.inMilliseconds).toInt(),
+                  milliseconds:
+                      (newValue * widget.duration.inMilliseconds).toInt(),
                 );
-                videoPlayerController.seekTo(newPosition);
+                // setState(() {
+                //   _controlsVisible = true;
+                // });
+                widget.videoPlayerController.seekTo(newPosition);
+                await _generatePreviewWidget(
+                    (newValue * widget.duration.inMilliseconds).toInt());
+                print(
+                    'widget.isPreviewVisible  is onChanged $isPreviewVisible');
+              },
+              onChangeStart: (newValue) {
+                setState(() {
+                  isPreviewVisible = true;
+                  // _controlsVisible = true;
+                });
+                // _generatePreviewWidget(
+                //     (newValue * widget.duration.inMilliseconds).toInt());
               },
               onChangeEnd: (newValue) {
-                final newPosition = Duration(
-                  milliseconds: (newValue * duration.inMilliseconds).toInt(),
-                );
-                videoPlayerController.seekTo(newPosition);
+                // final newPosition = Duration(
+                //   milliseconds:
+                //       (newValue * widget.duration.inMilliseconds).toInt(),
+                // );
+                setState(() {
+                  // _controlsVisible = false;
+                  isPreviewVisible = false;
+                });
+
+                // widget.videoPlayerController.seekTo(newPosition);
+                print(
+                    'widget.isPreviewVisible  is onChangedEnd $isPreviewVisible');
               },
             ),
           );
@@ -343,7 +366,82 @@ class VideoProgressBar extends StatelessWidget {
       ),
     );
   }
+
+  Row playForwardBackwardButtons(double size, double screenWidth) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment:
+              // screenWidth < 600
+              //     ? MainAxisAlignment.spaceAround
+              //     :
+              MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            IconButton(
+              icon: widget.isBuffering
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    )
+                  // const SizedBox.shrink()
+                  : Icon(
+                      widget.isPlaying ? Icons.pause : Icons.play_arrow,
+                      size: size,
+                      color: Colors.white,
+                    ),
+              onPressed: _controlsVisible ? widget.togglePlayPause : null,
+            ),
+            SizedBox(width: screenWidth < 600 ? 10 : 20),
+            // if (screenWidth > 600)
+            //   button(() => widget.seekBackward(30),
+            //       Icons.replay_30_rounded, size),
+            button(
+                () => widget.seekBackward(10), Icons.replay_10_rounded, size),
+
+            button(
+                () => widget.seekForward(10), Icons.forward_10_rounded, size),
+            // if (screenWidth > 600)
+            //   button(() => widget.seekForward(30),
+            //       Icons.forward_30_rounded, size),
+          ],
+        ),
+      ],
+    );
+  }
 }
+
+// class VideoProgressBar extends StatefulWidget {
+//   final VideoPlayerController videoPlayerController;
+//   final Duration duration;
+//   final Duration position;
+
+//   VideoProgressBar({
+//     Key? key,
+//     required this.videoPlayerController,
+//     required this.duration,
+//     required this.position,
+//   }) : super(key: key);
+
+//   @override
+//   State<VideoProgressBar> createState() => _VideoProgressBarState();
+// }
+
+// class _VideoProgressBarState extends State<VideoProgressBar> {
+
+//   @override
+//   Widget build(BuildContext context) {
+//     double progress = widget.duration.inMilliseconds > 0
+//         ? widget.position.inMilliseconds / widget.duration.inMilliseconds
+//         : 0.0;
+//     final screenWidth = MediaQuery.of(context).size.width;
+//     final screenHeight = MediaQuery.of(context).size.height;
+//     return   }
+// }
 
 class QualityChangerDropdown extends StatefulWidget {
   Function showSettingsOptions;

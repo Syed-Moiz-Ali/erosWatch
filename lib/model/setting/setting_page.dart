@@ -2,10 +2,8 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:eroswatch/services/appwrite.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SettingScreen extends StatefulWidget {
   const SettingScreen({Key? key}) : super(key: key);
@@ -31,6 +29,10 @@ class _SettingScreenState extends State<SettingScreen> {
   bool isLockedToggled = false; // New variable to track NSFW switch toggle
   late final PackageInfo packageInfo;
   final String contactEmail = 'shinten812@gmail.com';
+  late double getSpeed;
+  dynamic speed = 1.0;
+  double steps = 0.05;
+  TextEditingController speedController = TextEditingController(text: '1.0');
 
   @override
   void initState() {
@@ -225,6 +227,8 @@ class _SettingScreenState extends State<SettingScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isLocked = prefs.getBool('enableProtection') ?? false;
+      getSpeed = prefs.getDouble('speed')!;
+      speedController.text = prefs.getDouble('speed')!.toStringAsFixed(2);
     });
     // final data = await account.getPrefs();
     // setState(() {
@@ -233,36 +237,16 @@ class _SettingScreenState extends State<SettingScreen> {
     // });
   }
 
-  void _launchEmailApp(String toEmail) async {
-    String email = Uri.encodeComponent("shinten812@gmail.com");
-
-    //output: Hello%20Flutter
-    Uri mail = Uri.parse("mailto:$email");
-    if (await launchUrl(mail)) {
-      //email app opened
-      if (kDebugMode) {
-        print('Gmail app is launched');
-      }
-    } else {
-      // Handle the case where launching the email app is not supported
-      // Provide an alternative option, e.g., opening a web-based email service
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Eamil device not found.'),
-        ),
-      );
-    }
+  setSpeed(double val) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('speed', val);
+    setState(() {
+      speedController.text = prefs.getDouble('speed')!.toStringAsFixed(2);
+      getSpeed = prefs.getDouble('speed')!;
+    });
   }
 
   Widget conditionalChanger() {
-    Widget avatarWidget = CircleAvatar(
-      radius: 60,
-      backgroundColor: Colors.white,
-      child: CircleAvatar(
-        radius: 58,
-        backgroundImage: avatarImage != null ? MemoryImage(avatarImage!) : null,
-      ),
-    );
     if (name == 'test' &&
         email == "test@example.com" &&
         phoneNumber == "+919876543210") {
@@ -279,26 +263,44 @@ class _SettingScreenState extends State<SettingScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ListTile(
-          title: const Text(
-            'Set Screen lock',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+        Container(
+          // constraints: const BoxConstraints(minHeight: 150),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 3,
+                blurRadius: 7,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: ListTile(
+            title: const Text(
+              'Set Screen lock',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            trailing: Switch(
+              value: isLocked,
+              onChanged: (newValue) {
+                setState(() {
+                  isLocked = newValue;
+                });
+
+                // Toggle the NSFW status
+                toggleLock(newValue);
+              },
             ),
           ),
-          trailing: Switch(
-            value: isLocked,
-            onChanged: (newValue) {
-              setState(() {
-                isLocked = newValue;
-              });
-
-              // Toggle the NSFW status
-              toggleLock(newValue);
-            },
-          ),
         ),
+        const SizedBox(height: 22),
+        speedCard(),
+
         const SizedBox(height: 200.0), // Add spacing
         const Align(
           // Center the coming soon message and icon
@@ -333,6 +335,167 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget speedCard() {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 150),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 3,
+            blurRadius: 7,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.speed,
+                  size: 24.0,
+                  color: Colors.black,
+                ),
+                SizedBox(width: 8.0),
+                Text(
+                  'Set Playback Speed',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      double newSpeed = getSpeed - steps;
+                      if (newSpeed < steps) {
+                        newSpeed = steps;
+                      } else if (newSpeed < 0.5) {
+                        newSpeed = 0.5;
+                      }
+                      setState(() {
+                        setSpeed(newSpeed);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.blue.withOpacity(0.1),
+                      ),
+                      child: const Icon(
+                        Icons.remove,
+                        size: 24.0,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: Colors.blue.withOpacity(0.1),
+                      ),
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          hintText: speedController.text,
+                          border: InputBorder.none,
+                        ),
+                        readOnly: true,
+                        controller: speedController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  GestureDetector(
+                    onTap: () {
+                      double newSpeed = getSpeed + steps;
+                      if (newSpeed > 3.0) {
+                        newSpeed = 3.0;
+                      }
+                      setState(() {
+                        setSpeed(newSpeed);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.blue.withOpacity(0.1),
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        size: 24.0,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+          ElevatedButton(
+            onPressed: () {
+              setSpeed(1.0);
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.blue, // Text color
+
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16)), // Button border radius
+              ),
+              elevation: 8, // Button shadow
+            ),
+            child: Container(
+              // padding: const EdgeInsets.symmetric(
+              //     horizontal: 24, vertical: 16), // Button padding
+              margin: const EdgeInsets.symmetric(
+                  horizontal: 24, vertical: 16), // Button padding
+              child: const Center(
+                child: Text(
+                  'Reset',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 
@@ -628,20 +791,17 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
         ),
         shadowColor: Colors.transparent,
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(
-          color: Colors.blue,
-          size: 30,
-        ),
-        actions: <Widget>[
-          GestureDetector(
-            onTap: _toggleTextFieldEnabled,
-            child: Icon(
-              isTextFieldEnabled ? Icons.lock_open : Icons.edit,
-              color: Colors.black,
-            ),
-          ),
-        ],
+        // backgroundColor: Colors.white,
+
+        // actions: <Widget>[
+        //   GestureDetector(
+        //     onTap: _toggleTextFieldEnabled,
+        //     child: Icon(
+        //       isTextFieldEnabled ? Icons.lock_open : Icons.edit,
+        //       color: Colors.black,
+        //     ),
+        //   ),
+        // ],
       ),
       body: isLoading
           ? const Center(

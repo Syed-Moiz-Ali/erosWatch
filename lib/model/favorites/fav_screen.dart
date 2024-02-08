@@ -1,11 +1,12 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, must_be_immutable
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:eroswatch/model/favorites/fav_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FavScreen extends StatefulWidget {
-  const FavScreen({Key? key}) : super(key: key);
+  dynamic type;
+  FavScreen({Key? key, this.type}) : super(key: key);
 
   @override
   _FavScreenState createState() => _FavScreenState();
@@ -15,16 +16,18 @@ class _FavScreenState extends State<FavScreen> {
   String _selectedType = 'videos';
   Key? _pageKey = UniqueKey();
   late SharedPreferences prefs;
-
+  bool isHistory = false;
   @override
   void initState() {
     super.initState();
+    if (widget.type != null) {
+      isHistory = true;
+      _selectedType = 'historyvideos';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Initialization is completed, build the widget
-
     return Stack(
       children: [
         FavCard(
@@ -35,6 +38,7 @@ class _FavScreenState extends State<FavScreen> {
           bottom: 80.0,
           right: 25.0,
           child: FloatingActionButton(
+            heroTag: UniqueKey(),
             onPressed: _openMenu,
             child: const Icon(Icons.menu),
           ),
@@ -56,11 +60,17 @@ class _FavScreenState extends State<FavScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTab(0, Icons.label_outline, 'Videos'),
-              _buildTab(1, Icons.local_fire_department, 'Stars'),
-              _buildTab(2, Icons.upcoming_outlined, 'Channels'),
-            ],
+            children: isHistory == true
+                ? [
+                    _buildTab(0, Icons.label_outline, 'historyVideos'),
+                    _buildTab(1, Icons.local_fire_department, 'historyStars'),
+                    _buildTab(2, Icons.upcoming_outlined, 'historyChannels'),
+                  ]
+                : [
+                    _buildTab(0, Icons.label_outline, 'Videos'),
+                    _buildTab(1, Icons.local_fire_department, 'Stars'),
+                    _buildTab(2, Icons.upcoming_outlined, 'Channels'),
+                  ],
           ),
         );
       },
@@ -78,7 +88,8 @@ class _FavScreenState extends State<FavScreen> {
   }
 
   Widget _buildTab(int index, IconData icon, String title) {
-    final isSelected = index == _selectedTabIndex;
+    final isSelected = index ==
+        (isHistory == true ? _selectedTabIndexForHistory : _selectedTabIndex);
 
     return InkWell(
       onTap: () {
@@ -118,6 +129,19 @@ class _FavScreenState extends State<FavScreen> {
       case 'stars':
         return 1;
       case 'channels':
+        return 2;
+      default:
+        return 0;
+    }
+  }
+
+  int get _selectedTabIndexForHistory {
+    switch (_selectedType) {
+      case 'historyvideos':
+        return 0;
+      case 'historystars':
+        return 1;
+      case 'historychannels':
         return 2;
       default:
         return 0;

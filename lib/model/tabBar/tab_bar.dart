@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:eroswatch/model/pages/pages.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/cardProvider.dart';
 
 class TabBarContainer extends StatefulWidget {
   const TabBarContainer({
@@ -75,6 +78,7 @@ class _TabBarContainerState extends State<TabBarContainer> {
           shape: BoxShape.circle,
         ),
         child: FloatingActionButton(
+          heroTag: UniqueKey(),
           // heroTag: 'float',
           onPressed: _openMenu,
           backgroundColor: Colors.blue,
@@ -125,11 +129,11 @@ class _TabBarContainerState extends State<TabBarContainer> {
 
   Widget _buildTab(int index, IconData icon, String title) {
     final isSelected = index == _selectedTabIndex;
-
+    var provider = Provider.of<CardProvider>(context, listen: true);
     return InkWell(
-      onTap: () {
+      onTap: () async {
+        await provider.setSelectedScreenName(title);
         setState(() {
-          _selectedType = title.toLowerCase();
           Navigator.pop(context, title); // Pass the selected title
         });
       },

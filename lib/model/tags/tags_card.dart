@@ -16,8 +16,10 @@ class TagsCard extends StatefulWidget {
 class _TagsCardState extends State<TagsCard> {
   late APITags apiTags;
   List<Tags> tags = [];
+  List<Tags> filteredItems = [];
   bool isLoading = false;
   final int extraItems = 4;
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -39,6 +41,7 @@ class _TagsCardState extends State<TagsCard> {
 
       setState(() {
         tags.addAll(newTags);
+        filteredItems.addAll(newTags);
 
         isLoading = false;
       });
@@ -53,28 +56,34 @@ class _TagsCardState extends State<TagsCard> {
     }
   }
 
+  void filterList(String query) {
+    setState(() {
+      filteredItems = tags
+          .where(
+              (item) => item.title.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // Adjust the number of columns as needed
-            mainAxisExtent: 45,
-            mainAxisSpacing: 8.0,
-            crossAxisSpacing: 8.0,
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              seachBar(),
+              filteredItems.isEmpty
+                  ? const Center(
+                      child: Text('no tags found'),
+                    )
+                  : Wrap(
+                      children: filteredItems.map((Tags tag) {
+                        return buildVideoCard(tag);
+                      }).toList(),
+                    ),
+            ],
           ),
-          itemCount:
-              tags.length + extraItems, // Assuming Tags has a videos property
-          itemBuilder: (context, index) {
-            if (index < tags.length) {
-              Tags tag = tags[index];
-              return buildVideoCard(tag);
-            } else {
-              // Return a placeholder for white space
-              return Container(color: Colors.transparent);
-            }
-          },
         ),
         if (isLoading)
           const Center(
@@ -88,50 +97,66 @@ class _TagsCardState extends State<TagsCard> {
     );
   }
 
+  Padding seachBar() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextField(
+        controller: searchController,
+        onChanged: (v) {
+          filterList(v);
+        },
+        style: const TextStyle(
+          color: Colors.black87,
+          fontSize: 16.0,
+        ),
+        cursorColor: Colors.blue,
+        decoration: InputDecoration(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 14.0),
+          hintText: 'Type to search...',
+          prefixIcon: const Icon(Icons.search, color: Colors.blue),
+          filled: true,
+          fillColor: Colors.grey[200],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25.0),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(25.0),
+            borderSide: const BorderSide(color: Colors.blue),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildVideoCard(Tags tags) {
     final title = tags.title;
-    // Implement this function to return a widget representing a video card
-    // You can customize the appearance and layout of the video card here
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 3.0),
-      height: 45,
-      decoration: BoxDecoration(
-          color: Colors.blue[400], borderRadius: BorderRadius.circular(2000)),
-      child:
-          // ChoiceChip(
-          //   label: Text(tags.tagTitle),
-          //   selected: widget.choiceIndex == index,
-          //   onSelected: (bool selected) {
-          //     setState(() {
-          //       widget.choiceIndex = selected ? index : 0;
-          //       widget.text = tags.tagTitle;
-          //     });
-          //   },
-          //   selectedColor: Colors.blue.shade300,
-          //   backgroundColor: Colors.blue,
-          // ),
 
-          Center(
-        child: TextButton(
-          onPressed: () {
-            // ViewContainer(passedData: tags.tagTitle);
-            if (title.isNotEmpty) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ViewContainer(passedData: title),
-                ),
-              );
-            }
-          },
-          child: Text(
-            tags.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
+    return GestureDetector(
+      onTap: () {
+        if (title.isNotEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ViewContainer(passedData: title),
             ),
+          );
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 3.0, vertical: 1.0),
+        child: Chip(
+          label: Text(
+            tags.title,
+            style: const TextStyle(color: Colors.white, fontSize: 16),
             overflow: TextOverflow.ellipsis,
+          ),
+          backgroundColor: Colors.blue[400],
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6000),
           ),
         ),
       ),

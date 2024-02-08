@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print
 
-import 'package:eroswatch/model/setting/setting_page.dart';
+import 'package:eroswatch/global/globalFunctions.dart';
+import 'package:eroswatch/providers/bottom_navigator_provider.dart';
+import 'package:eroswatch/providers/cardProvider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,10 +10,10 @@ import 'package:flutter/services.dart';
 import 'package:eroswatch/model/Stars/stars_screen.dart';
 
 import 'package:eroswatch/model/Channels/channel_container.dart';
+import 'package:provider/provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:eroswatch/model/favorites/fav_screen.dart';
 import 'package:eroswatch/components/container/container_screen.dart';
 import 'package:eroswatch/model/tabBar/tab_bar.dart';
 import 'package:eroswatch/model/tags/tags_container.dart';
@@ -30,7 +32,7 @@ class VideoScreen extends StatefulWidget {
 
 class _VideoScreenState extends State<VideoScreen>
     with TickerProviderStateMixin {
-  int pageIndex = 0;
+  // int provider.pageIndex = 0;
   final ScrollController _scrollController = ScrollController();
   List<String> favorites = [];
   double iconSize = 25.0;
@@ -88,6 +90,7 @@ class _VideoScreenState extends State<VideoScreen>
     String searchTerm = _searchController.text.trim();
     if (searchTerm.isNotEmpty) {
       // _searchController.clear();
+      suggestions.clear();
       _isSearching = !_isSearching;
       Navigator.push(
         context,
@@ -108,8 +111,8 @@ class _VideoScreenState extends State<VideoScreen>
     {'title': 'Home', 'icon': Icons.home, 'index': 0},
     {'title': 'Channels', 'icon': Icons.chat_bubble_rounded, 'index': 1},
     {'title': 'Stars', 'icon': Icons.star_outline_outlined, 'index': 2},
-    {'title': 'Favorites', 'icon': Icons.favorite, 'index': 3},
-    {'title': 'Tags', 'icon': Icons.tag, 'index': 4},
+    // {'title': 'Favorites', 'icon': Icons.favorite, 'index': 3},
+    {'title': 'Tags', 'icon': Icons.tag, 'index': 3},
   ];
   Future<void> fetchTags() async {
     if (isLoading) return;
@@ -156,6 +159,9 @@ class _VideoScreenState extends State<VideoScreen>
 
   @override
   Widget build(BuildContext context) {
+    var provider = Provider.of<BottomNavigatorProvider>(context, listen: true);
+    var cardProvider = Provider.of<CardProvider>(context, listen: true);
+
     final screenSize = MediaQuery.of(context).size;
     double screenWidth = MediaQuery.of(context).size.width;
     if (kDebugMode) {
@@ -168,7 +174,7 @@ class _VideoScreenState extends State<VideoScreen>
       const TabBarContainer(),
       const ChannelContainer(),
       const StarsScreen(),
-      const FavScreen(),
+      // FavScreen(),
       const TagsContainer()
     ];
 
@@ -209,28 +215,29 @@ class _VideoScreenState extends State<VideoScreen>
                 ),
               )
             : Text(
-                _getAppBarTitle(pageIndex),
+                _getAppBarTitle(context, provider.pageIndex),
                 style: const TextStyle(
                   color: Colors.blue,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-        leading: IconButton(
-          icon: const Icon(
-              Icons.account_circle), // Replace with your profile icon
-          color: Colors.blue,
-          onPressed: () {
-            Navigator.push<void>(
-              context,
-              MaterialPageRoute<void>(
-                builder: (BuildContext context) => const SettingScreen(),
-              ),
-            );
-            // Handle profile icon click
-          },
-        ),
-        actions: _getAppBarTitle(pageIndex) == 'Home'
+        // leading: IconButton(
+        //   icon: const Icon(
+        //       Icons.account_circle), // Replace with your profile icon
+        //   color: Colors.blue,
+        //   onPressed: () {
+        //     Navigator.push<void>(
+        //       context,
+        //       MaterialPageRoute<void>(
+        //         builder: (BuildContext context) => const SettingScreen(),
+        //       ),
+        //     );
+        //     // Handle profile icon click
+        //   },
+        // ),
+        actions: _getAppBarTitle(context, provider.pageIndex) ==
+                cardProvider.selectedScreenName
             ? <Widget>[
                 IconButton(
                   icon: AnimatedCrossFade(
@@ -252,138 +259,168 @@ class _VideoScreenState extends State<VideoScreen>
         backgroundColor: Colors.white,
       ),
 
-      body: Stack(
-        children: [
-          Row(children: [
-            screenWidth >= 700
-                ? Expanded(
-                    child: SizedBox(
-                      width: 250,
-                      height: double.infinity,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                pageIndex = 0;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              backgroundColor:
-                                  pageIndex == 0 ? Colors.blue : Colors.white,
-                              padding: const EdgeInsets.all(20),
-                              shadowColor: Colors.transparent,
+      body: WillPopScope(
+        onWillPop: () async {
+          if (provider.pageIndex == 0 &&
+              provider.previousPagesHistory.isEmpty) {
+            SMA.navigateBack(context);
+          } else if (provider.pageIndex != 0 &&
+              provider.previousPagesHistory.isEmpty) {
+            provider.setPageIndex(0);
+          } else {
+            provider.previousPagesHistory.removeLast();
+            if (provider.previousPagesHistory.isEmpty) {
+              provider.setPageIndex(0);
+            } else {
+              provider.setPageIndex(provider.previousPagesHistory.last);
+            }
+          }
+          // return false;
+          return false;
+        },
+        child: Stack(
+          children: [
+            Row(children: [
+              screenWidth >= 700
+                  ? Expanded(
+                      child: SizedBox(
+                        width: 250,
+                        height: double.infinity,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  provider.pageIndex = 0;
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                backgroundColor: provider.pageIndex == 0
+                                    ? Colors.blue
+                                    : Colors.white,
+                                padding: const EdgeInsets.all(20),
+                                shadowColor: Colors.transparent,
+                              ),
+                              child: Icon(
+                                Icons.home,
+                                size: iconSize,
+                                color: provider.pageIndex == 0
+                                    ? Colors.white
+                                    : Colors.blue,
+                              ),
                             ),
-                            child: Icon(
-                              Icons.home,
-                              size: iconSize,
-                              color:
-                                  pageIndex == 0 ? Colors.white : Colors.blue,
+                            const SizedBox(height: 40),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  provider.pageIndex = 1;
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                backgroundColor: provider.pageIndex == 1
+                                    ? Colors.blue
+                                    : Colors.white,
+                                padding: const EdgeInsets.all(22),
+                                shadowColor: Colors.transparent,
+                              ),
+                              child: Icon(
+                                Icons.chat_bubble_rounded,
+                                size: iconSize,
+                                color: provider.pageIndex == 1
+                                    ? Colors.white
+                                    : Colors.blue,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 40),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                pageIndex = 1;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              backgroundColor:
-                                  pageIndex == 1 ? Colors.blue : Colors.white,
-                              padding: const EdgeInsets.all(22),
-                              shadowColor: Colors.transparent,
+                            const SizedBox(height: 40),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  provider.pageIndex = 2;
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                backgroundColor: provider.pageIndex == 2
+                                    ? Colors.blue
+                                    : Colors.white,
+                                padding: const EdgeInsets.all(22),
+                                shadowColor: Colors.transparent,
+                              ),
+                              child: Icon(
+                                Icons.star_outline_outlined,
+                                size: iconSize,
+                                color: provider.pageIndex == 2
+                                    ? Colors.white
+                                    : Colors.blue,
+                              ),
                             ),
-                            child: Icon(
-                              Icons.chat_bubble_rounded,
-                              size: iconSize,
-                              color:
-                                  pageIndex == 1 ? Colors.white : Colors.blue,
+                            const SizedBox(height: 40),
+                            // ElevatedButton(
+                            //   onPressed: () {
+                            //     setState(() {
+                            //       provider.pageIndex = 3;
+                            //     });
+                            //   },
+                            //   style: ElevatedButton.styleFrom(
+                            //     shape: const CircleBorder(),
+                            //     backgroundColor: provider.pageIndex == 3
+                            //         ? Colors.blue
+                            //         : Colors.white,
+                            //     padding: const EdgeInsets.all(22),
+                            //     shadowColor: Colors.transparent,
+                            //   ),
+                            //   child: Icon(
+                            //     Icons.favorite,
+                            //     size: iconSize,
+                            //     color: provider.pageIndex == 3
+                            //         ? Colors.white
+                            //         : Colors.blue,
+                            //   ),
+                            // ),
+                            const SizedBox(height: 40),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  provider.pageIndex = 3;
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                backgroundColor: provider.pageIndex == 3
+                                    ? Colors.blue
+                                    : Colors.white,
+                                padding: const EdgeInsets.all(22),
+                                shadowColor: Colors.transparent,
+                              ),
+                              child: Icon(
+                                Icons.tag,
+                                size: iconSize,
+                                color: provider.pageIndex == 3
+                                    ? Colors.white
+                                    : Colors.blue,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 40),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                pageIndex = 2;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              backgroundColor:
-                                  pageIndex == 2 ? Colors.blue : Colors.white,
-                              padding: const EdgeInsets.all(22),
-                              shadowColor: Colors.transparent,
-                            ),
-                            child: Icon(
-                              Icons.star_outline_outlined,
-                              size: iconSize,
-                              color:
-                                  pageIndex == 2 ? Colors.white : Colors.blue,
-                            ),
-                          ),
-                          const SizedBox(height: 40),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                pageIndex = 3;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              backgroundColor:
-                                  pageIndex == 3 ? Colors.blue : Colors.white,
-                              padding: const EdgeInsets.all(22),
-                              shadowColor: Colors.transparent,
-                            ),
-                            child: Icon(
-                              Icons.favorite,
-                              size: iconSize,
-                              color:
-                                  pageIndex == 3 ? Colors.white : Colors.blue,
-                            ),
-                          ),
-                          const SizedBox(height: 40),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                pageIndex = 4;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              backgroundColor:
-                                  pageIndex == 4 ? Colors.blue : Colors.white,
-                              padding: const EdgeInsets.all(22),
-                              shadowColor: Colors.transparent,
-                            ),
-                            child: Icon(
-                              Icons.tag,
-                              size: iconSize,
-                              color:
-                                  pageIndex == 4 ? Colors.white : Colors.blue,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  )
-                : Expanded(
-                    flex: screenWidth >= 700 ? 7 : 1,
-                    child: IndexedStack(
-                      index: pageIndex,
-                      children: pages,
-                    )),
-          ]),
-          if (suggestions.isNotEmpty) searchSuggestionContainer(),
-          if (screenWidth <= 700) bottomNavigationBarForPhones(),
-        ],
+                    )
+                  : Expanded(
+                      flex: screenWidth >= 700 ? 7 : 1,
+                      child: IndexedStack(
+                        index: provider.pageIndex,
+                        children: pages,
+                      )),
+            ]),
+            if (suggestions.isNotEmpty) searchSuggestionContainer(),
+            if (screenWidth <= 700) bottomNavigationBarForPhones(),
+          ],
+        ),
       ),
 
-      // pages[pageIndex],
+      // pages[provider.pageIndex],
     );
   }
 
@@ -392,10 +429,7 @@ class _VideoScreenState extends State<VideoScreen>
         bottom: 10,
         left: 5,
         right: 5,
-        child: BottomNavigator(
-          pageIndex: pageIndex,
-          items: bottomNavigatorItmes,
-        ));
+        child: BottomNavigator(items: bottomNavigatorItmes, type: 'subMain'));
   }
 
   Positioned searchSuggestionContainer() {
@@ -536,17 +570,18 @@ Widget buildIconButtonWithText(
   );
 }
 
-String _getAppBarTitle(int currentIndex) {
+String _getAppBarTitle(BuildContext context, int currentIndex) {
+  var provider = Provider.of<CardProvider>(context, listen: true);
   switch (currentIndex) {
     case 0:
-      return 'Home';
+      return provider.selectedScreenName;
     case 1:
-      return 'Channels';
+      return provider.selectedChannelName;
     case 2:
       return 'Stars';
+    // case 3:
+    //   return 'Favorites';
     case 3:
-      return 'Favorites';
-    case 4:
       return 'Categories';
 
     default:

@@ -34,10 +34,11 @@ class _CardScreenState extends State<SimilarCard> {
   int _currentPlayingIndex = -1;
   bool changeOnTap = false;
 
-  final database = ErosWatchDatabase(storageKey: 'videos');
+  var database;
   @override
   void initState() {
     super.initState();
+
     loadFavorites();
   }
 
@@ -207,6 +208,9 @@ class _CardScreenState extends State<SimilarCard> {
   }
 
   void loadFavorites() async {
+    setState(() {
+      database = ErosWatchDatabase(storageKey: 'videos', context: context);
+    });
     try {
       final favoritesList = await database.getAllVideos();
       setState(() {

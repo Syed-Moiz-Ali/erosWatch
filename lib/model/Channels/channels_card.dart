@@ -1,6 +1,6 @@
 // import 'dart:html';
 
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
 import 'package:eroswatch/components/smallComponents/image_compoenent.dart';
 import 'package:eroswatch/util/utils.dart';
@@ -32,10 +32,12 @@ class _ChannelScreenState extends State<ChannelCard> {
 
   final ChromeSafariBrowser browser = ChromeSafariBrowser();
   bool changeOnTap = true;
-  final database = ErosWatchDatabase(storageKey: 'channels');
+  var database;
+  var historyDatabase;
   @override
   void initState() {
     super.initState();
+
     loadFavorites();
     // _isPlaying = false;
   }
@@ -79,11 +81,12 @@ class _ChannelScreenState extends State<ChannelCard> {
         // bool isPlaying = index == _currentPlayingIndex;
 
         return GestureDetector(
-          onTap: () {
+          onTap: () async {
             if (!newImage.contains('spankbang')) {
               handleClickButton(context, widget.link);
             } else {
-              Navigator.push(
+              await historyDatabase.insertChannels(channel);
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => StarContainer(
@@ -185,6 +188,11 @@ class _ChannelScreenState extends State<ChannelCard> {
   }
 
   void loadFavorites() async {
+    setState(() {
+      database = ErosWatchDatabase(storageKey: 'channels', context: context);
+      historyDatabase =
+          ErosWatchDatabase(storageKey: 'historychannels', context: context);
+    });
     try {
       final favoritesList = await database.getAllChannels();
       setState(() {

@@ -1,13 +1,9 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously
 
-import 'package:eroswatch/components/smallComponents/inapp_update.dart';
-import 'package:eroswatch/videos_screen.dart';
+import 'package:eroswatch/model/mainScreen/mainScreen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../model/demo/demo.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -26,8 +22,6 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _authenticate(BuildContext context) async {
-    SharedPreferences _prefs = await SharedPreferences.getInstance();
-    String? baseUrl = _prefs.getString('baseUrl');
     bool authenticated = false;
     try {
       authenticated = await _localAuthentication.authenticate(
@@ -54,7 +48,7 @@ class _AuthPageState extends State<AuthPage> {
       // if (baseUrl != null && baseUrl.contains('demo')) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => DemoPage()),
+        MaterialPageRoute(builder: (context) => MainScreen()),
       );
       // } else {
       // Navigator.pushReplacement(

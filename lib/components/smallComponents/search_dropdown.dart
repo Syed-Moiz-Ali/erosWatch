@@ -134,6 +134,7 @@ class _DropDownState extends State<SearchDropDown> {
       ),
       child: FloatingActionButton(
         // heroTag: 'float',
+        heroTag: UniqueKey(),
         onPressed: () {
           _showBottomSheet(context);
         },

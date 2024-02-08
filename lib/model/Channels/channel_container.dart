@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:eroswatch/model/Channels/channel_screen.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/cardProvider.dart';
 
 class ChannelContainer extends StatefulWidget {
   const ChannelContainer({
@@ -49,6 +52,7 @@ class _ContainerState extends State<ChannelContainer> {
         ),
         child: FloatingActionButton(
           // heroTag: 'float',
+          heroTag: UniqueKey(),
           onPressed: _openMenu,
           backgroundColor: Colors.blue,
           child: const Icon(
@@ -98,13 +102,14 @@ class _ContainerState extends State<ChannelContainer> {
 
   Widget _buildTab(int index, IconData icon, String title) {
     final isSelected = index == _selectedTabIndex;
-
+    var provider = Provider.of<CardProvider>(context, listen: true);
     return InkWell(
-      onTap: () {
+      onTap: () async {
         setState(() {
           _selectedType = title.toLowerCase();
           Navigator.pop(context, title); // Pass the selected title
         });
+        await provider.setSelectedChannelName(title);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12.0),

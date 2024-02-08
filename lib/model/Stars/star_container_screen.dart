@@ -42,10 +42,10 @@ class _ContainerState extends State<StarContainer> {
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        iconTheme: const IconThemeData(
-          color: Colors.blue,
-          // size: 30, // Set the color of the back button
-        ),
+        // iconTheme: const IconThemeData(
+        //   color: Colors.blue,
+        //   // size: 30, // Set the color of the back button
+        // ),
         shadowColor: Colors.transparent,
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15.0),

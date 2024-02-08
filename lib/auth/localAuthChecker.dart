@@ -1,8 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:eroswatch/auth/localauth.dart';
-import 'package:eroswatch/model/demo/demo.dart';
-import 'package:eroswatch/videos_screen.dart';
+import 'package:eroswatch/model/mainScreen/mainScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,7 +35,7 @@ class _LocalAuthCheckerState extends State<LocalAuthChecker> {
       context,
       MaterialPageRoute(
           builder: (context) =>
-              enableProtection ? const AuthPage() : DemoPage()),
+              enableProtection ? const AuthPage() : MainScreen()),
     );
   }
 

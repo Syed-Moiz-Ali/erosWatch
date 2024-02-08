@@ -92,44 +92,47 @@ class _DetailScreenState extends State<DetailScreen> {
     // const demoVideo =
     //     "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4";
     return Scaffold(
-        body: ListView.builder(
-      itemCount: episodes.length,
-      itemBuilder: (context, index) {
-        final episodeData = episodes[index];
-        final streamUrls = episodeData.streamUrls;
+        body: SafeArea(
+      child: ListView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        itemCount: episodes.length,
+        itemBuilder: (context, index) {
+          final episodeData = episodes[index];
+          final streamUrls = episodeData.streamUrls;
 
-        // Access other fields from episodeData
-        // final String keywords = streamUrls['keywords'];
-        final String thumbnail = streamUrls['thumbnail'];
-        final String keywords = episodeData.keywords;
+          // Access other fields from episodeData
+          // final String keywords = streamUrls['keywords'];
+          final String thumbnail = streamUrls['thumbnail'];
+          final String keywords = episodeData.keywords;
 
-        final String link240p = getStreamLink(streamUrls, '240p');
-        final String link360p = getStreamLink(streamUrls, '360p');
-        final String link480p = getStreamLink(streamUrls, '480p');
-        final String link720p = getStreamLink(streamUrls, '720p');
-        final String link1080p = getStreamLink(streamUrls, '1080p');
-        final String fourk = getStreamLink(streamUrls, '4k');
-        final String main = getStreamLink(streamUrls, 'main');
-        final String m3u8 = getStreamLink(streamUrls, 'm3u8');
+          final String link240p = getStreamLink(streamUrls, '240p');
+          final String link360p = getStreamLink(streamUrls, '360p');
+          final String link480p = getStreamLink(streamUrls, '480p');
+          final String link720p = getStreamLink(streamUrls, '720p');
+          final String link1080p = getStreamLink(streamUrls, '1080p');
+          final String fourk = getStreamLink(streamUrls, '4k');
+          final String main = getStreamLink(streamUrls, 'main');
+          final String m3u8 = getStreamLink(streamUrls, 'm3u8');
 
-        final videoUrls = VideoUrls(
-          thumbnail: thumbnail,
-          keywords: keywords,
-          link240p: link240p,
-          link360p: link360p,
-          link480p: link480p,
-          link720p: link720p,
-          link1080p: link1080p,
-          fourk: fourk,
-          main: main,
-          m3u8: m3u8,
-        );
-        return VideoPlayerScreen(
-          videoUrls: videoUrls,
-          id: widget.id,
-          title: widget.title,
-        );
-      },
+          final videoUrls = VideoUrls(
+            thumbnail: thumbnail,
+            keywords: keywords,
+            link240p: link240p,
+            link360p: link360p,
+            link480p: link480p,
+            link720p: link720p,
+            link1080p: link1080p,
+            fourk: fourk,
+            main: main,
+            m3u8: m3u8,
+          );
+          return VideoPlayerScreen(
+            videoUrls: videoUrls,
+            id: widget.id,
+            title: widget.title,
+          );
+        },
+      ),
     ));
   }
 }

@@ -28,26 +28,27 @@ class _TagsContainerState extends State<TagsContainer> {
           ),
         ],
       ),
-      floatingActionButton: Container(
-        margin: const EdgeInsets.only(
-          bottom: 60,
-          right: 10,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.blue,
-          shape: BoxShape.circle,
-        ),
-        child: FloatingActionButton(
-          // heroTag: 'float',
-          onPressed: _openMenu,
-          backgroundColor: Colors.blue,
-          child: const Icon(
-            Icons.menu,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // floatingActionButton: Container(
+      //   margin: const EdgeInsets.only(
+      //     bottom: 60,
+      //     right: 10,
+      //   ),
+      //   decoration: const BoxDecoration(
+      //     color: Colors.blue,
+      //     shape: BoxShape.circle,
+      //   ),
+      //   child: FloatingActionButton(
+      // heroTag: UniqueKey(),
+      //     // heroTag: 'float',
+      //     onPressed: _openMenu,
+      //     backgroundColor: Colors.blue,
+      //     child: const Icon(
+      //       Icons.menu,
+      //       color: Colors.white,
+      //     ),
+      //   ),
+      // ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 

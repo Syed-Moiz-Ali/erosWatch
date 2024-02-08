@@ -61,10 +61,10 @@ class _ContainerState extends State<ViewContainer> {
     ];
     return Scaffold(
       appBar: AppBar(
-        iconTheme: const IconThemeData(
-          color: Colors.black,
-          size: 30, // Set the color of the back button
-        ),
+        // iconTheme: const IconThemeData(
+        //   color: Colors.black,
+        //   size: 30, // Set the color of the back button
+        // ),
         shadowColor: Colors.transparent,
         title: Text(
           categTitle,
