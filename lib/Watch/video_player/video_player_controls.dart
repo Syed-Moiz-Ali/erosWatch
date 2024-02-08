@@ -2,9 +2,8 @@
 
 import 'dart:async';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
@@ -380,20 +379,11 @@ class _VideoPlayerControlsState extends State<VideoPlayerControls> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             IconButton(
-              icon: widget.isBuffering
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                      ),
-                    )
-                  // const SizedBox.shrink()
-                  : Icon(
-                      widget.isPlaying ? Icons.pause : Icons.play_arrow,
-                      size: size,
-                      color: Colors.white,
-                    ),
+              icon: Icon(
+                widget.isPlaying ? Icons.pause : Icons.play_arrow,
+                size: size,
+                color: Colors.white,
+              ),
               onPressed: _controlsVisible ? widget.togglePlayPause : null,
             ),
             SizedBox(width: screenWidth < 600 ? 10 : 20),
@@ -459,6 +449,21 @@ class _QualityChangerDropdownState extends State<QualityChangerDropdown> {
   // Track the selected quality
   String selectedQuality = '480p';
   bool isDropdownVisible = false;
+  @override
+  void initState() {
+    super.initState();
+    _loadSelectedQuality();
+  }
+
+  _loadSelectedQuality() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? quality = sharedPreferences.getString('selectedQuality');
+    if (quality != null) {
+      setState(() {
+        selectedQuality = quality;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

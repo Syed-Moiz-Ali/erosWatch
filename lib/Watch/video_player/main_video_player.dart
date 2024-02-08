@@ -109,6 +109,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       setState(() {});
     });
     fetchAndParseVastXml();
+    _loadSelectedQuality();
     _videoPlayerController.addListener(() {
       setState(() {
         _currentPosition = _videoPlayerController.value.position;
@@ -124,6 +125,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     checkPrefs();
   }
 
+  _loadSelectedQuality() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? quality = sharedPreferences.getString('settingSelectedQuality');
+    if (quality != null) {
+      setState(() {
+        selectedQuality = quality;
+      });
+      changeVideoQuality(quality);
+    }
+  }
+
   double get widthFactor => widthFactorValues[currentWidthFactorIndex];
 
   double get heightFactor => heightFactorValues[currentHeightFactorIndex];
@@ -131,6 +143,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   Future<void> checkPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('showAdTimestamp', DateTime.now().millisecondsSinceEpoch);
+    double settingSpeed = prefs.getDouble('settingSpeed') ?? 1.0;
+    await prefs.setDouble('speed', settingSpeed);
     double newSpeed = prefs.getDouble('speed') ?? 1.0;
     setState(() {
       playbackSpeed = newSpeed;

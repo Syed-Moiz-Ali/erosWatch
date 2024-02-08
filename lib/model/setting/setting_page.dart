@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,11 +29,11 @@ class _SettingScreenState extends State<SettingScreen> {
   bool isLockedToggled = false; // New variable to track NSFW switch toggle
   late final PackageInfo packageInfo;
   final String contactEmail = 'shinten812@gmail.com';
-  late double getSpeed;
+  late double getSpeed = 1.0;
   dynamic speed = 1.0;
   double steps = 0.05;
   TextEditingController speedController = TextEditingController(text: '1.0');
-
+  String selectedQuality = '240p';
   @override
   void initState() {
     super.initState();
@@ -43,6 +43,7 @@ class _SettingScreenState extends State<SettingScreen> {
     isTextFieldEnabled = false;
     fetchPackageInfoAndCheckForUpdates();
     _loadPreferences();
+    _loadSelectedQuality();
     // loadUsers();
   }
 
@@ -53,6 +54,15 @@ class _SettingScreenState extends State<SettingScreen> {
     });
   }
 
+  _loadSelectedQuality() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? quality = sharedPreferences.getString('settingSelectedQuality');
+    if (quality != null) {
+      setState(() {
+        selectedQuality = quality;
+      });
+    }
+  }
   // void loadUsers() async {
   //   try {
   //     var promise = await account.get();
@@ -227,8 +237,9 @@ class _SettingScreenState extends State<SettingScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isLocked = prefs.getBool('enableProtection') ?? false;
-      getSpeed = prefs.getDouble('speed')!;
-      speedController.text = prefs.getDouble('speed')!.toStringAsFixed(2);
+      getSpeed = prefs.getDouble('settingSpeed')!;
+      speedController.text =
+          prefs.getDouble('settingSpeed')!.toStringAsFixed(2);
     });
     // final data = await account.getPrefs();
     // setState(() {
@@ -239,10 +250,11 @@ class _SettingScreenState extends State<SettingScreen> {
 
   setSpeed(double val) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('speed', val);
+    await prefs.setDouble('settingSpeed', val);
     setState(() {
-      speedController.text = prefs.getDouble('speed')!.toStringAsFixed(2);
-      getSpeed = prefs.getDouble('speed')!;
+      speedController.text =
+          prefs.getDouble('settingSpeed')!.toStringAsFixed(2);
+      getSpeed = prefs.getDouble('settingSpeed')!;
     });
   }
 
@@ -259,7 +271,7 @@ class _SettingScreenState extends State<SettingScreen> {
     }
   }
 
-  Column sayLoginToUser() {
+  Widget sayLoginToUser() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -299,41 +311,98 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
         ),
         const SizedBox(height: 22),
-        speedCard(),
-
-        const SizedBox(height: 200.0), // Add spacing
-        const Align(
-          // Center the coming soon message and icon
-          alignment: Alignment.center,
-          child: Column(
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 3,
+                blurRadius: 7,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Login and Register Coming Soon!',
+              const Text(
+                'Select Qality',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 10.0), // Add spacing
-              Icon(
-                Icons.hourglass_empty, // You can change the icon
-                size: 50,
-                color: Colors.orange, // Customize icon color
+              DropdownButton<String>(
+                value: selectedQuality,
+                onChanged: (newValue) async {
+                  SharedPreferences sharedPreferences =
+                      await SharedPreferences.getInstance();
+                  await sharedPreferences.setString(
+                      'settingSelectedQuality', newValue!);
+                  setState(() {
+                    selectedQuality = newValue;
+                    print('newValue is $newValue');
+                  });
+                  // Perform action based on selected quality
+                  // For example: updatePreferences(newValue);
+                },
+                items: <String>['240p', '360p', '480p', '720p', '1080p', '4K']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-              SizedBox(height: 20.0), // Add spacing
-              // GestureDetector(
-              //   onTap: () {
-              //     _launchEmailApp(contactEmail);
-              //   },
-              //   child: Image.asset(
-              //     'assets/images/gmail.png',
-              //     width: 50,
-              //     height: 50,
-              //   ),
-              // ),
             ],
           ),
         ),
+        const SizedBox(height: 22),
+        speedCard(),
+
+        // const SizedBox(height: 200.0), // Add spacing
+        // const Align(
+        //   // Center the coming soon message and icon
+        //   alignment: Alignment.center,
+        //   child: Column(
+        //     children: [
+        //       Text(
+        //         'Login and Register Coming Soon!',
+        //         style: TextStyle(
+        //           fontSize: 18,
+        //           fontWeight: FontWeight.bold,
+        //         ),
+        //       ),
+        //       SizedBox(height: 10.0), // Add spacing
+        //       Icon(
+        //         Icons.hourglass_empty, // You can change the icon
+        //         size: 50,
+        //         color: Colors.orange, // Customize icon color
+        //       ),
+        //       SizedBox(height: 20.0), // Add spacing
+        //       // GestureDetector(
+        //       //   onTap: () {
+        //       //     _launchEmailApp(contactEmail);
+        //       //   },
+        //       //   child: Image.asset(
+        //       //     'assets/images/gmail.png',
+        //       //     width: 50,
+        //       //     height: 50,
+        //       //   ),
+        //       // ),
+        //     ],
+        //   ),
+        // ),
       ],
     );
   }

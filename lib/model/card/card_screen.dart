@@ -192,7 +192,7 @@ class _CardScreenState extends State<CardScreen> {
                 );
               }).toList(),
             ),
-            SizedBox(height: 140),
+            const SizedBox(height: 140),
           ],
         ),
       ),

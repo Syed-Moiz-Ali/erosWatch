@@ -38,4 +38,17 @@ class CardProvider extends ChangeNotifier {
     isLoading = false;
     notifyListeners();
   }
+
+  bool isPreview = false;
+  setIsPreview(val) {
+    isPreview = val;
+    notifyListeners();
+  }
+
+  int currentPlayingIndex = 0;
+
+  void setCurrentPlayingIndex(int index) {
+    currentPlayingIndex = index;
+    notifyListeners();
+  }
 }

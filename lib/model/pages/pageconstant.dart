@@ -23,7 +23,7 @@ class _PageConstantState extends State<PageConstant> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: const Text("Latest Wallpapers")),
+      // creen Width:: AppBar(title: const Text("Latest Wallpapers")),
       body: Stack(
         children: [
           // const SizedBox(
