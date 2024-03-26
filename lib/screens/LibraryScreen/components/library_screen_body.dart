@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../model/favorites/fav_screen.dart';
+import '../../../view/favorites/fav_screen.dart';
 
 class LibraryScreenBody extends StatelessWidget {
   const LibraryScreenBody({super.key});

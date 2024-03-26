@@ -7,7 +7,7 @@ import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:eroswatch/model/Stars/star_container_screen.dart';
+import 'package:eroswatch/view/Stars/star_container_screen.dart';
 
 import 'package:eroswatch/helper/videos.dart';
 

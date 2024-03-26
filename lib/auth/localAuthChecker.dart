@@ -1,7 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:eroswatch/auth/localauth.dart';
-import 'package:eroswatch/model/mainScreen/mainScreen.dart';
+import 'package:eroswatch/view/mainScreen/mainScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

@@ -2,7 +2,9 @@
 
 import 'package:eroswatch/extensions/txxx/txxx.dart';
 import 'package:eroswatch/global/globalFunctions.dart';
+import 'package:eroswatch/models/spankbang.dart';
 import 'package:eroswatch/providers/bottom_navigator_provider.dart';
+import 'package:eroswatch/providers/modelProvider.dart';
 import 'package:eroswatch/screens/BrowseScreen/components/demo.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -51,7 +53,7 @@ class _BrowseScreenBodyState extends State<BrowseScreenBody> {
 
   @override
   Widget build(BuildContext context) {
-    var provider = Provider.of<BottomNavigatorProvider>(context, listen: false);
+    var provider = Provider.of<BottomNavigatorProvider>(context, listen: true);
     String baseUrl = 'https://spankbang.party';
     String title = 'Spankbang';
     return RefreshIndicator(
@@ -65,7 +67,9 @@ class _BrowseScreenBodyState extends State<BrowseScreenBody> {
 
             await prefs.setString('baseUrl', baseUrl);
             await prefs.setString('title', title);
-
+            var modelProvider =
+                Provider.of<ModelProvider>(context, listen: false);
+            await modelProvider.setServer(model: Spankbang(), baseUrl: baseUrl);
             provider.pageIndex = 0;
             await SMA.navigateTo(
                 context,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // import 'package:eroswatch/components/bottom_navigatiom.dart';
-import 'package:eroswatch/model/search/search_screen.dart';
+import 'package:eroswatch/view/search/search_screen.dart';
 import '../../helper/videos.dart';
 
 class ViewContainer extends StatefulWidget {

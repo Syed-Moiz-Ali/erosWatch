@@ -1,6 +1,7 @@
 // import 'dart:html';
 // ignore_for_file: must_be_immutable, library_private_types_in_public_api, use_build_context_synchronously, prefer_typing_uninitialized_variables
 
+import 'package:eroswatch/models/spankbang.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -12,7 +13,7 @@ import '../../util/utils.dart';
 import '../detail/detail_screen.dart';
 
 class CardScreen extends StatefulWidget {
-  final List<Videos> content;
+  final List<VideoItem> content;
   bool fav;
 
   CardScreen({
@@ -27,7 +28,7 @@ class CardScreen extends StatefulWidget {
 
 class _CardScreenState extends State<CardScreen> {
   final ChromeSafariBrowser browser = ChromeSafariBrowser();
-  List<Videos> favorites = [];
+  List<VideoItem> favorites = [];
   bool changeOnTap = true;
   // final Map<int, bool> _isPlayingMap =
 
@@ -67,8 +68,8 @@ class _CardScreenState extends State<CardScreen> {
     );
   }
 
-  Widget cardData(
-      List<Videos> filteredContent, BuildContext context, double screenWidth) {
+  Widget cardData(List<VideoItem> filteredContent, BuildContext context,
+      double screenWidth) {
     return SingleChildScrollView(
       child: Center(
         child: Column(
@@ -199,7 +200,7 @@ class _CardScreenState extends State<CardScreen> {
     );
   }
 
-  void toggleFavorite(Videos item) async {
+  void toggleFavorite(VideoItem item) async {
     if (favorites.any((fav) => fav.id == item.id)) {
       showRemoveDialog(context, item);
     } else {
@@ -230,7 +231,7 @@ class _CardScreenState extends State<CardScreen> {
     }
   }
 
-  Future<void> addToFavorites(Videos item) async {
+  Future<void> addToFavorites(VideoItem item) async {
     try {
       await database.insertVideo(item).then((_) => loadFavorites());
       await loadFavorites();
@@ -242,7 +243,7 @@ class _CardScreenState extends State<CardScreen> {
     }
   }
 
-  Future<void> removeFromFavorites(Videos item) async {
+  Future<void> removeFromFavorites(VideoItem item) async {
     try {
       await database.deleteVideo(item).then((_) => loadFavorites());
     } catch (e) {
@@ -253,7 +254,7 @@ class _CardScreenState extends State<CardScreen> {
     }
   }
 
-  void showRemoveDialog(BuildContext context, Videos item) {
+  void showRemoveDialog(BuildContext context, VideoItem item) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -304,7 +305,7 @@ class WebViewWidget extends StatelessWidget {
     required this.videos,
   });
 
-  final Videos videos;
+  final VideoItem videos;
 
   @override
   Widget build(BuildContext context) {

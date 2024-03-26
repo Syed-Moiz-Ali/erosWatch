@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'providers/bottom_navigator_provider.dart';
 import 'providers/cardProvider.dart';
+import 'providers/modelProvider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,12 +55,24 @@ class VideoApp extends StatelessWidget {
         ChangeNotifierProvider<CardProvider>(
           create: (context) => CardProvider(),
         ),
+        ChangeNotifierProvider<ModelProvider>(
+          create: (context) => ModelProvider(),
+        ),
       ],
       child: MaterialApp(
         title: 'ErosWatch',
+        // color: Colors.blue,
         theme: ThemeData(
+          primaryColorLight: Colors.blue,
           primarySwatch: Colors.blue,
           primaryColor: Colors.blue,
+          indicatorColor: Colors.blue,
+          // colorScheme: ColorScheme(primary: Colors.blue, surface: null),
+          // colorSchemeSeed: Colors.blue,
+          floatingActionButtonTheme:
+              FloatingActionButtonThemeData(backgroundColor: Colors.blue),
+          progressIndicatorTheme:
+              ProgressIndicatorThemeData(color: Colors.blue),
           primaryIconTheme: const IconThemeData(color: Colors.blue),
           appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,

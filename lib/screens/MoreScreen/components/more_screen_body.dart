@@ -4,7 +4,7 @@ import 'package:eroswatch/components/api/firebase/uploading_extensions.dart';
 import 'package:flutter/material.dart';
 
 import '../../../components/api/firebase/database.dart';
-import '../../../model/setting/setting_page.dart';
+import '../../../view/setting/setting_page.dart';
 
 class MoreScreenBody extends StatelessWidget {
   const MoreScreenBody({super.key});

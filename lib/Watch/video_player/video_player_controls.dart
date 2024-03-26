@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
+// import 'package:video_thumbnail/video_thumbnail.dart';
 
 class VideoPlayerControls extends StatefulWidget {
   final bool isPlaying;
@@ -93,29 +93,29 @@ class _VideoPlayerControlsState extends State<VideoPlayerControls> {
 
   bool isPreviewVisible = false;
   Image? previewImage;
-  _generatePreviewWidget(newPosition) async {
-    print('jjjjj');
-    try {
-      final uint8list = await VideoThumbnail.thumbnailData(
-            video: widget.videoPlayerController.dataSource,
-            imageFormat: ImageFormat.JPEG,
-            maxWidth:
-                50, // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
-            quality: 10,
-            timeMs: newPosition,
-          ) ??
-          Uint8List(40);
-      print('previewImage is ${uint8list.toString()}');
-      setState(() {
-        previewImage = Image.memory(
-          uint8list,
-          fit: BoxFit.cover,
-        );
-      });
-    } catch (e) {
-      print('the error is $e');
-    }
-  }
+  // _generatePreviewWidget(newPosition) async {
+  //   print('jjjjj');
+  //   try {
+  //     final uint8list = await VideoThumbnail.thumbnailData(
+  //           video: widget.videoPlayerController.dataSource,
+  //           imageFormat: ImageFormat.JPEG,
+  //           maxWidth:
+  //               50, // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
+  //           quality: 10,
+  //           timeMs: newPosition,
+  //         ) ??
+  //         Uint8List(40);
+  //     print('previewImage is ${uint8list.toString()}');
+  //     setState(() {
+  //       previewImage = Image.memory(
+  //         uint8list,
+  //         fit: BoxFit.cover,
+  //       );
+  //     });
+  //   } catch (e) {
+  //     print('the error is $e');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -332,8 +332,8 @@ class _VideoPlayerControlsState extends State<VideoPlayerControls> {
                 //   _controlsVisible = true;
                 // });
                 widget.videoPlayerController.seekTo(newPosition);
-                await _generatePreviewWidget(
-                    (newValue * widget.duration.inMilliseconds).toInt());
+                // await _generatePreviewWidget(
+                //     (newValue * widget.duration.inMilliseconds).toInt());
                 print(
                     'widget.isPreviewVisible  is onChanged $isPreviewVisible');
               },

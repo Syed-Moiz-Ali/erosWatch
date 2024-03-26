@@ -9,10 +9,12 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/components/api/api_service.dart';
 import 'package:eroswatch/components/smallComponents/dropdown.dart';
-import 'package:eroswatch/model/pages/pageconstant.dart';
+import 'package:eroswatch/view/pages/pageconstant.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
+
+import '../../models/spankbang.dart';
 
 class PageScreen extends StatefulWidget {
   final String id;
@@ -30,7 +32,7 @@ class _MyPageSate extends State<PageScreen> {
     id: widget.id,
   );
   ChromeSafariBrowser browser = ChromeSafariBrowser();
-  List<Videos> wallpapers = [];
+  List<VideoItem> wallpapers = [];
   late int pageNumber = 1;
   bool isLoading = false;
   String gifUrl = '';
@@ -131,8 +133,8 @@ class _MyPageSate extends State<PageScreen> {
     });
 
     try {
-      final List<Videos> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+      final List<VideoItem> newWallpapers =
+          await apiService.fetchWallpapers(context, pageNumber);
       insertRandomAds(newWallpapers); // Insert ad randomly
 
       setState(() {
@@ -174,7 +176,7 @@ class _MyPageSate extends State<PageScreen> {
       isLoading = true;
     });
     // Fetch new data from the API
-    final newWallpapers = await apiService.fetchWallpapers(1);
+    final newWallpapers = await apiService.fetchWallpapers(context, 1);
 
     // Update the UI with new data
     setState(() {
@@ -184,7 +186,7 @@ class _MyPageSate extends State<PageScreen> {
     });
   }
 
-  void insertRandomAds(List<Videos> wallpapers) {
+  void insertRandomAds(List<VideoItem> wallpapers) {
     const int numAdsToInsert = 2; // You can adjust this as needed
 
     for (int i = 0; i < numAdsToInsert; i++) {
@@ -194,7 +196,7 @@ class _MyPageSate extends State<PageScreen> {
 
       wallpapers.insert(
         randomIndex,
-        Videos(
+        VideoItem(
           id: 'id$i',
           image:
               'https://alterassumeaggravate.com/vxzhm5ur2?key=67878f8f4b7b02dba995a675709106f1',

@@ -9,7 +9,7 @@ import 'package:eroswatch/Watch/video_tags.dart';
 import 'package:eroswatch/components/api/api_service.dart';
 import 'package:eroswatch/helper/videos.dart';
 
-import 'package:eroswatch/model/card/similarCard.dart';
+import 'package:eroswatch/view/card/similarCard.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
@@ -54,7 +54,7 @@ class _SimilarScreenState extends State<SimilarScreen> {
 
     try {
       final List<Videos> newWallpapers =
-          await apiService.fetchWallpapers(pageNumber);
+          await apiService.fetchWallpapers(context, pageNumber);
       insertRandomAds(newWallpapers);
       setState(() {
         wallpapers.addAll(newWallpapers);

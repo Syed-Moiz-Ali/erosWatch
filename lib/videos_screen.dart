@@ -7,16 +7,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:eroswatch/model/Stars/stars_screen.dart';
+import 'package:eroswatch/view/Stars/stars_screen.dart';
 
-import 'package:eroswatch/model/Channels/channel_container.dart';
+import 'package:eroswatch/view/Channels/channel_container.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:eroswatch/components/container/container_screen.dart';
-import 'package:eroswatch/model/tabBar/tab_bar.dart';
-import 'package:eroswatch/model/tags/tags_container.dart';
+import 'package:eroswatch/view/tabBar/tab_bar.dart';
+import 'package:eroswatch/view/tags/tags_container.dart';
 
 import 'components/api/api_service.dart';
 import 'components/bottomNavigator.dart';
@@ -160,7 +160,7 @@ class _VideoScreenState extends State<VideoScreen>
   @override
   Widget build(BuildContext context) {
     var provider = Provider.of<BottomNavigatorProvider>(context, listen: true);
-    var cardProvider = Provider.of<CardProvider>(context, listen: true);
+    var cardProvider = Provider.of<CardProvider>(context, listen: false);
 
     final screenSize = MediaQuery.of(context).size;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -571,7 +571,7 @@ Widget buildIconButtonWithText(
 }
 
 String _getAppBarTitle(BuildContext context, int currentIndex) {
-  var provider = Provider.of<CardProvider>(context, listen: true);
+  var provider = Provider.of<CardProvider>(context, listen: false);
   switch (currentIndex) {
     case 0:
       return provider.selectedScreenName;

@@ -1,4 +1,4 @@
-import 'package:eroswatch/model/favorites/fav_screen.dart';
+import 'package:eroswatch/view/favorites/fav_screen.dart';
 import 'package:flutter/material.dart';
 
 class HistoryScreenBody extends StatelessWidget {

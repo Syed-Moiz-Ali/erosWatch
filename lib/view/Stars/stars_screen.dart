@@ -1,39 +1,36 @@
-// ignore_for_file: must_be_immutable, depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages
 
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import 'package:eroswatch/components/api/api_service.dart';
-import 'package:eroswatch/helper/videos.dart';
-import 'package:eroswatch/model/Channels/channels_card.dart';
+import 'package:eroswatch/view/Stars/star_card.dart';
+import '../../components/api/api_service.dart';
+import '../../helper/videos.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
-class ChannelScreen extends StatefulWidget {
-  String param;
-  ChannelScreen({super.key, required this.param});
+class StarsScreen extends StatefulWidget {
+  const StarsScreen({super.key});
 
   @override
-  State<ChannelScreen> createState() => _ChannelScreenState();
+  State<StarsScreen> createState() => _StarsScreenState();
 }
 
-class _ChannelScreenState extends State<ChannelScreen> {
-  late APIChannels apiService;
-  List<Channels> channels = [];
+class _StarsScreenState extends State<StarsScreen> {
+  final APIStars apiService = APIStars(params: "stars");
+  List<Stars> stars = [];
   bool isLoading = false;
   int pageNumber = 1;
   String gifUrl = '';
   String nonLinearClickThroughUrl = '';
-  late Future<List<Channels>> futureChannels;
-
+  late Future<List<Stars>> futureStars;
+  List<Stars> favoriteWallpapers = [];
   @override
   initState() {
     super.initState();
-    apiService = APIChannels(params: "channels", type: widget.param);
-    futureChannels = apiService.fetchWallpapers(1);
-    fetchAndParseVastXml().then((_) => fetchChannels());
+    futureStars = apiService.fetchWallpapers(1);
+    fetchAndParseVastXml().then((_) => fetchStars());
   }
 
   @override
@@ -41,19 +38,18 @@ class _ChannelScreenState extends State<ChannelScreen> {
     super.dispose();
   }
 
-  Future<void> fetchChannels() async {
+  Future<void> fetchStars() async {
     if (isLoading) return;
     setState(() {
       isLoading = true;
     });
 
     try {
-      final List<Channels> newChannels =
-          await apiService.fetchWallpapers(pageNumber);
-      insertRandomAds(newChannels);
+      final List<Stars> newStars = await apiService.fetchWallpapers(pageNumber);
+      insertRandomAds(newStars);
 
       setState(() {
-        channels.addAll(newChannels);
+        stars.addAll(newStars);
         pageNumber++;
         isLoading = false;
       });
@@ -83,6 +79,7 @@ class _ChannelScreenState extends State<ChannelScreen> {
 
         final nonLinearElement =
             document.findAllElements('NonLinearClickThrough').first;
+
         // nonLinearClickThroughUrl = nonLinearElement
         //     .findAllElements('NonLinearClickThrough')
         //     .first
@@ -107,8 +104,16 @@ class _ChannelScreenState extends State<ChannelScreen> {
     }
   }
 
-  void insertRandomAds(List<Channels> wallpapers) {
-    const int numAdsToInsert = 6; // You can adjust this as needed
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollEndNotification &&
+        notification.metrics.extentAfter <= 1400) {
+      fetchStars();
+    }
+    return false;
+  }
+
+  void insertRandomAds(List<Stars> wallpapers) {
+    const int numAdsToInsert = 8; // You can adjust this as needed
 
     for (int i = 0; i < numAdsToInsert; i++) {
       final int randomIndex = Random()
@@ -117,21 +122,15 @@ class _ChannelScreenState extends State<ChannelScreen> {
 
       wallpapers.insert(
         randomIndex,
-        Channels(
+        Stars(
           id: 'id$i',
+          starName: 'Ad',
           image: gifUrl,
-          title: 'Ad',
+          views: 'Ad',
+          videos: 'Ad',
         ),
       );
     }
-  }
-
-  bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollEndNotification &&
-        notification.metrics.extentAfter <= 1400) {
-      fetchChannels();
-    }
-    return false;
   }
 
   @override
@@ -146,8 +145,8 @@ class _ChannelScreenState extends State<ChannelScreen> {
               ),
           NotificationListener<ScrollNotification>(
             onNotification: _onScrollNotification,
-            child: ChannelCard(
-              content: channels,
+            child: StarCard(
+              content: stars,
               link: nonLinearClickThroughUrl,
               image: gifUrl,
             ),

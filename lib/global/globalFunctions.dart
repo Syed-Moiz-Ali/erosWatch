@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 
-import 'api_helper.dart';
+import '../helper/api_helper.dart';
 import 'constants.dart';
 
 class ApiService {

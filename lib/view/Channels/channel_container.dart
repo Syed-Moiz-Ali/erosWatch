@@ -1,58 +1,31 @@
-// ignore_for_file: library_private_types_in_public_api, must_be_immutable
-
 import 'package:flutter/foundation.dart';
-
 import 'package:flutter/material.dart';
-import 'package:eroswatch/model/pages/pages.dart';
+import 'package:eroswatch/view/Channels/channel_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/cardProvider.dart';
 
-class TabBarContainer extends StatefulWidget {
-  const TabBarContainer({
+class ChannelContainer extends StatefulWidget {
+  const ChannelContainer({
     Key? key,
   }) : super(key: key);
 
   @override
-  _TabBarContainerState createState() => _TabBarContainerState();
+  State<ChannelContainer> createState() => _ContainerState();
 }
 
-class _TabBarContainerState extends State<TabBarContainer> {
-  String _selectedType = 'trending_videos';
+class _ContainerState extends State<ChannelContainer> {
+  String _selectedType = 'popular';
   Key? _pageKey = UniqueKey(); // Key to force page refresh
-
-  // final List<Widget> _pages = [
-  //   const PageScreen(type: 'trending'),
-  //   const PageScreen(type: 'popular'),
-  //   const PageScreen(type: 'upcoming'),
-  //   const PageScreen(type: 'new'),
-  // ];
 
   @override
   void initState() {
     super.initState();
-    // Initialize the _pages list based on _selectedType
-    // _pages[0] = const PageScreen(type: 'trending');
-    // _pages[1] = const PageScreen(type: 'popular');
-    // _pages[2] = const PageScreen(type: 'upcoming');
-    // _pages[3] = const PageScreen(type: 'new');
-  }
+    // final APIService apiService = APIService(params: widget.passedData);
 
-  switchCase(text) {
-    switch (text) {
-      case 'Trending':
-        return 'trending_videos';
-
-      case 'Popular':
-        return 'most_popular';
-      case 'Upcoming':
-        return 'upcoming';
-      case 'New':
-        return 'new_videos';
-
-      default:
-        return 'trending_videos';
-    }
+    // if (kDebugMode) {
+    //   print(widget.passedData);
+    // }
   }
 
   @override
@@ -61,8 +34,8 @@ class _TabBarContainerState extends State<TabBarContainer> {
       body: Column(
         children: [
           Expanded(
-            child: PageScreen(
-              type: _selectedType,
+            child: ChannelScreen(
+              param: _selectedType,
               key: _pageKey,
             ),
           ),
@@ -78,8 +51,8 @@ class _TabBarContainerState extends State<TabBarContainer> {
           shape: BoxShape.circle,
         ),
         child: FloatingActionButton(
-          heroTag: UniqueKey(),
           // heroTag: 'float',
+          heroTag: UniqueKey(),
           onPressed: _openMenu,
           backgroundColor: Colors.blue,
           child: const Icon(
@@ -106,10 +79,10 @@ class _TabBarContainerState extends State<TabBarContainer> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildTab(0, Icons.label_outline, 'Trending'),
-              _buildTab(1, Icons.local_fire_department, 'Popular'),
-              _buildTab(2, Icons.upcoming_outlined, 'Upcoming'),
-              _buildTab(3, Icons.new_releases_outlined, 'New'),
+              _buildTab(0, Icons.local_fire_department, 'Popular'),
+              _buildTab(1, Icons.hotel_class, 'Hot'),
+              _buildTab(2, Icons.new_releases_outlined, 'New'),
+              _buildTab(3, Icons.sort_by_alpha_rounded, 'Name'),
             ],
           ),
         );
@@ -117,7 +90,7 @@ class _TabBarContainerState extends State<TabBarContainer> {
     ).then((value) {
       if (value != null) {
         setState(() {
-          _selectedType = switchCase(value); // Update the selected type
+          _selectedType = value.toLowerCase(); // Update the selected type
           _pageKey = UniqueKey();
         });
         if (kDebugMode) {
@@ -132,10 +105,11 @@ class _TabBarContainerState extends State<TabBarContainer> {
     var provider = Provider.of<CardProvider>(context, listen: true);
     return InkWell(
       onTap: () async {
-        await provider.setSelectedScreenName(title);
         setState(() {
+          _selectedType = title.toLowerCase();
           Navigator.pop(context, title); // Pass the selected title
         });
+        await provider.setSelectedChannelName(title);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -163,13 +137,13 @@ class _TabBarContainerState extends State<TabBarContainer> {
 
   int get _selectedTabIndex {
     switch (_selectedType) {
-      case 'trending_videos':
+      case 'popular':
         return 0;
-      case 'most_popular':
+      case 'hot':
         return 1;
-      case 'upcoming':
+      case 'new':
         return 2;
-      case 'new_videos':
+      case 'name':
         return 3;
       default:
         return 0; // Default to the first tab

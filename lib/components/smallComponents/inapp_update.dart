@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:package_info_plus/package_info_plus.dart';
+// import 'package:package_info_plus/package_info_plus.dart';
 
 class UpdateScreen extends StatefulWidget {
   const UpdateScreen({Key? key}) : super(key: key);
@@ -20,7 +20,7 @@ class UpdateScreen extends StatefulWidget {
 }
 
 class _UpdateScreenState extends State<UpdateScreen> {
-  late PackageInfo packageInfo;
+  // late PackageInfo packageInfo;
   String latestVersion = '1.0.18';
   bool isLoading = true;
   late int appVersionLastInt = 0;
@@ -30,86 +30,86 @@ class _UpdateScreenState extends State<UpdateScreen> {
   @override
   void initState() {
     super.initState();
-    fetchPackageInfoAndCheckForUpdates();
+    // fetchPackageInfoAndCheckForUpdates();
   }
 
-  Future<void> fetchPackageInfoAndCheckForUpdates() async {
-    packageInfo = await PackageInfo.fromPlatform();
-    if (kDebugMode) {
-      print('App Version: v${packageInfo.version}');
-    }
+  // Future<void> fetchPackageInfoAndCheckForUpdates() async {
+  //   packageInfo = await PackageInfo.fromPlatform();
+  //   if (kDebugMode) {
+  //     print('App Version: v${packageInfo.version}');
+  //   }
 
-    final String version = packageInfo.version;
-    final List<String> versionParts = version.split('.');
+  //   final String version = packageInfo.version;
+  //   final List<String> versionParts = version.split('.');
 
-    if (versionParts.isNotEmpty) {
-      final String lastPart = versionParts.last;
+  //   if (versionParts.isNotEmpty) {
+  //     final String lastPart = versionParts.last;
 
-      try {
-        setState(() {
-          appVersionLastInt = int.parse(lastPart);
-        });
-        if (kDebugMode) {
-          print(appVersionLastInt);
-        }
-      } catch (e) {
-        // Handle any parsing errors here
-        if (kDebugMode) {
-          print('Error parsing last version part: $lastPart');
-        }
-      }
-    }
-    const String repositoryUrl =
-        'https://api.github.com/repos/MyCoding331/erosWatch/releases';
-    final response = await http.get(Uri.parse(repositoryUrl));
-    if (response.statusCode == 200) {
-      final List<dynamic> releases = json.decode(response.body);
-      if (releases.isNotEmpty) {
-        final Map<String, dynamic> latestRelease = releases[0];
-        final String releaseVersion = latestRelease['tag_name'];
-        final List<String> versionParts =
-            releaseVersion.replaceAll('v', '').split('.');
-        if (versionParts.isNotEmpty) {
-          final String lastVersion = versionParts.last;
-          setState(() {
-            githubVersionInt = int.tryParse(lastVersion);
-          });
-          if (githubVersionInt != null) {
-            if (kDebugMode) {
-              print('GitHub Version (Integer): $githubVersionInt');
-            }
-          } else {
-            // Handle the case where the numeric part couldn't be converted to an int.
-            if (kDebugMode) {
-              print('Invalid GitHub Version: $releaseVersion');
-            }
-          }
-        } else {
-          // Handle the case where there are no version parts.
-          if (kDebugMode) {
-            print('Invalid GitHub Version Format: $releaseVersion');
-          }
-        }
+  //     try {
+  //       setState(() {
+  //         appVersionLastInt = int.parse(lastPart);
+  //       });
+  //       if (kDebugMode) {
+  //         print(appVersionLastInt);
+  //       }
+  //     } catch (e) {
+  //       // Handle any parsing errors here
+  //       if (kDebugMode) {
+  //         print('Error parsing last version part: $lastPart');
+  //       }
+  //     }
+  //   }
+  //   const String repositoryUrl =
+  //       'https://api.github.com/repos/MyCoding331/erosWatch/releases';
+  //   final response = await http.get(Uri.parse(repositoryUrl));
+  //   if (response.statusCode == 200) {
+  //     final List<dynamic> releases = json.decode(response.body);
+  //     if (releases.isNotEmpty) {
+  //       final Map<String, dynamic> latestRelease = releases[0];
+  //       final String releaseVersion = latestRelease['tag_name'];
+  //       final List<String> versionParts =
+  //           releaseVersion.replaceAll('v', '').split('.');
+  //       if (versionParts.isNotEmpty) {
+  //         final String lastVersion = versionParts.last;
+  //         setState(() {
+  //           githubVersionInt = int.tryParse(lastVersion);
+  //         });
+  //         if (githubVersionInt != null) {
+  //           if (kDebugMode) {
+  //             print('GitHub Version (Integer): $githubVersionInt');
+  //           }
+  //         } else {
+  //           // Handle the case where the numeric part couldn't be converted to an int.
+  //           if (kDebugMode) {
+  //             print('Invalid GitHub Version: $releaseVersion');
+  //           }
+  //         }
+  //       } else {
+  //         // Handle the case where there are no version parts.
+  //         if (kDebugMode) {
+  //           print('Invalid GitHub Version Format: $releaseVersion');
+  //         }
+  //       }
 
-        if (kDebugMode) {
-          print('Github Version: $releaseVersion');
-        }
-        if (appVersionLastInt < githubVersionInt!) {
-          _showUpdateDialog(latestRelease);
-        } else {
-          setState(() {
-            isLoading =
-                false; // Update the state to indicate loading is complete
-          });
-          // No update needed, navigate to VideoScreen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const VideoScreen()),
-          );
-        }
-      }
-    }
-  }
+  //       if (kDebugMode) {
+  //         print('Github Version: $releaseVersion');
+  //       }
+  //       if (appVersionLastInt < githubVersionInt!) {
+  //         _showUpdateDialog(latestRelease);
+  //       } else {
+  //         setState(() {
+  //           isLoading =
+  //               false; // Update the state to indicate loading is complete
+  //         });
+  //         // No update needed, navigate to VideoScreen
+  //         Navigator.pushReplacement(
+  //           context,
+  //           MaterialPageRoute(builder: (context) => const VideoScreen()),
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
 
   void _showUpdateDialog(Map<String, dynamic> latestRelease) {
     final List<dynamic> assets = latestRelease['assets'];

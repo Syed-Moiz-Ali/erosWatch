@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 
-import '../model/Channels/channel_screen.dart';
-import '../model/pages/pages.dart';
+import '../view/Channels/channel_screen.dart';
+import '../view/pages/pages.dart';
 
 class TrendingScreen extends StatelessWidget {
   dynamic type;

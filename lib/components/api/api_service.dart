@@ -1,9 +1,13 @@
-// ignore_for_file: avoid_print, library_prefixes, depend_on_referenced_packages
+// ignore_for_file: avoid_print, library_prefixes, depend_on_referenced_packages, use_build_context_synchronously
 
 import 'dart:convert';
-
+import 'package:eroswatch/helper/api_helper.dart';
+import 'package:eroswatch/models/spankbang.dart' as spankbang;
+import 'package:eroswatch/providers/modelProvider.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eroswatch/helper/videos.dart';
 import 'package:html/parser.dart' as htmlParser;
@@ -40,7 +44,7 @@ class APIService {
     this.id = '',
   });
 
-  Future<List<Videos>> fetchWallpapers(int pageNo) async {
+  fetchWallpapers(BuildContext context, int pageNo) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final selectedDate = prefs.getString('selectedDate') ?? 'all';
     final selectedDuration = prefs.getString('selectedDuration') ?? 'all';
@@ -77,14 +81,16 @@ class APIService {
       queryParams += '&d=$selectedDuration';
     }
 
-    final String url = id != ''
-        ? '$baseUrl$params${pageNo != 1 ? '$pageNo' : ''}?$newParamForStarAndChannel$queryParams'
-        : params == "popular_videos"
-            ? '$baseUrl/$params${pageNo != 1 ? '/$pageNo' : ''}$queryParams'
-            : params.contains('similar')
-                ? '$baseUrl/${params.replaceAll('similar/', '')}'
-                : '$baseUrl/$params${pageNo != 1 ? '/$pageNo' : ''}$queryParams';
-
+    final String url =
+        // id != ''
+        //     ? '$baseUrl$params${pageNo != 1 ? '$pageNo' : ''}?$newParamForStarAndChannel$queryParams'
+        //     : params == "popular_videos"
+        //         ? '$baseUrl/$params${pageNo != 1 ? '/$pageNo' : ''}$queryParams'
+        //         : params.contains('similar')
+        //             ? '$baseUrl/${params.replaceAll('similar/', '')}'
+        //             : '$baseUrl/$params${pageNo != 1 ? '/$pageNo' : ''}$queryParams';
+        spankbang.SpankbangBaseUrls().buildUrl(baseUrl!, params, pageNo,
+            newParamForStarAndChannel!, queryParams, id);
     print('urlis $url');
     allCoupon.clear();
 
@@ -114,50 +120,56 @@ class APIService {
       //   }),
       // );
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      );
-      // print('response  is ${response.body}');
-      if (response.statusCode == 200) {
-        final String html = response.body;
-        final document = htmlParser.parse(html);
-        // print('allCoupon is $allCoupon');
+      // final response = await http.get(
+      //   Uri.parse(url),
+      //   headers: headers,
+      // );
+      // // print('response  is ${response.body}');
+      // if (response.statusCode == 200) {
+      //   final String html = response.body;
+      //   final document = htmlParser.parse(html);
+      //   // print('allCoupon is $allCoupon');
 
-        final elements = document.querySelectorAll('.video-list > .video-item');
-        allCoupon.addAll(elements.map((element) => {
-              'title': element.querySelector('.n')?.text ?? '',
-              'id': element.querySelector('.thumb')?.attributes['href'] ?? '',
-              'image': element
-                      .querySelector('.thumb > picture > img')
-                      ?.attributes['data-src'] ??
-                  '',
-              'preview': element
-                      .querySelector('.thumb > picture > img')
-                      ?.attributes['data-preview'] ??
-                  '',
-              'duration': element.querySelector('.thumb > .t > .l')?.text ?? '',
-              'quality': element.querySelector('.thumb > .t > .h')?.text ?? '',
-              'time': element.querySelector('.stats > .v')?.text ?? '',
-            }));
+      //   final elements = document.querySelectorAll('.video-list > .video-item');
+      //   allCoupon.addAll(elements.map((element) => {
+      //         'title': element.querySelector('.n')?.text ?? '',
+      //         'id': element.querySelector('.thumb')?.attributes['href'] ?? '',
+      //         'image': element
+      //                 .querySelector('.thumb > picture > img')
+      //                 ?.attributes['data-src'] ??
+      //             '',
+      //         'preview': element
+      //                 .querySelector('.thumb > picture > img')
+      //                 ?.attributes['data-preview'] ??
+      //             '',
+      //         'duration': element.querySelector('.thumb > .t > .l')?.text ?? '',
+      //         'quality': element.querySelector('.thumb > .t > .h')?.text ?? '',
+      //         'time': element.querySelector('.stats > .v')?.text ?? '',
+      //       }));
 
-        final List<Videos> wallpapers =
-            allCoupon.map((item) => Videos.fromMap(item)).toList();
+      //   final List<Videos> wallpapers =
+      //       allCoupon.map((item) => Videos.fromMap(item)).toList();
 
-        // if (kDebugMode) {
-        //   print('Fetched ${wallpapers.length} wallpapers successfully.');
-        //   print('Fetched ${wallpapers[0].title} wallpapers successfully.');
-        // }
-        final List<Videos> filteredWallpapers = wallpapers.skip(8).toList();
-        return filteredWallpapers;
-      } else {
-        if (kDebugMode) {
-          print(
-              'Failed to load wallpapers. Status code: ${response.statusCode}');
-        }
-        print('allCoupon is $allCoupon');
-        throw Exception('Failed to load wallpapers');
-      }
+      //   // if (kDebugMode) {
+      //   //   print('Fetched ${wallpapers.length} wallpapers successfully.');
+      //   //   print('Fetched ${wallpapers[0].title} wallpapers successfully.');
+      //   // }
+      //   final List<Videos> filteredWallpapers = wallpapers.skip(8).toList();
+      //   return filteredWallpapers;
+      // } else {
+      //   if (kDebugMode) {
+      //     print(
+      //         'Failed to load wallpapers. Status code: ${response.statusCode}');
+      //   }
+      //   print('allCoupon is $allCoupon');
+      //   throw Exception('Failed to load wallpapers');
+      // }
+      var provider = Provider.of<ModelProvider>(context, listen: false);
+      print('baseURRRRRLLLLL is ${provider.baseUrl}');
+      return ApiHelper.fetchData(
+          url,
+          // spankbang.Spankbang.parseVideoItems
+          provider.model.parseVideoItems);
     } catch (e) {
       if (kDebugMode) {
         print('An error occurred while fetching wallpapers: $e');
@@ -276,7 +288,7 @@ class APISearchService {
   final imgHeaders = {'Accept': 'image/*', 'Accept-language': 'en'};
   APISearchService({this.params = '', this.categ = 'trending'});
 
-  Future<List<Videos>> fetchWallpapers(int pageNo) async {
+  fetchWallpapers(int pageNo) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     final baseUrl = prefs.getString('baseUrl');

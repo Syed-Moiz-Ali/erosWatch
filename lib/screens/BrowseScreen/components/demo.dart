@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:eroswatch/global/globalFunctions.dart';
-import 'package:eroswatch/model/mainScreen/mainScreen.dart';
+import 'package:eroswatch/view/mainScreen/mainScreen.dart';
 import 'package:eroswatch/providers/bottom_navigator_provider.dart';
 import 'package:eroswatch/providers/cardProvider.dart';
 import 'package:eroswatch/screens/BrowseScreen/browse_screen.dart';

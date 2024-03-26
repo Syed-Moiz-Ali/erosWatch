@@ -1,3 +1,4 @@
+import 'package:eroswatch/models/spankbang.dart';
 import 'package:flutter/material.dart';
 
 import '../card/card_screen.dart';
@@ -5,7 +6,7 @@ import '../../helper/videos.dart';
 
 class PageConstant extends StatefulWidget {
   final VoidCallback? fetchWallpapers;
-  final List<Videos> content;
+  final List<VideoItem> content;
   final bool isLoading;
 
   const PageConstant({

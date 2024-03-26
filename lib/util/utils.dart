@@ -10,6 +10,7 @@ import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../models/spankbang.dart';
 import '../providers/cardProvider.dart';
 
 ChromeSafariBrowser? openBrowser;
@@ -104,7 +105,7 @@ class ErosWatchDatabase {
     }
   }
 
-  Future<int> insertVideo(Videos video) async {
+  Future<int> insertVideo(VideoItem video) async {
     try {
       await open();
       final List<Map<String, dynamic>> existingVideos = await _database.query(
@@ -206,7 +207,7 @@ class ErosWatchDatabase {
     }
   }
 
-  Future<List<Videos>> getAllVideos() async {
+  Future<List<VideoItem>> getAllVideos() async {
     try {
       await open();
       List<Map<String, dynamic>> maps = await _database.query(storageKey);
@@ -216,7 +217,7 @@ class ErosWatchDatabase {
       }
       return List.generate(maps.length, (i) {
         final String jsonData = maps[i]['${storageKey}Data'];
-        return Videos.fromJson(json.decode(jsonData));
+        return VideoItem.fromJson(json.decode(jsonData));
       });
     } catch (e) {
       if (kDebugMode) {

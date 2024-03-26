@@ -1,3 +1,4 @@
+import 'package:eroswatch/models/spankbang.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,9 +43,9 @@ class Search3 extends StatefulWidget {
 }
 
 class _MySearchState extends State<Search> {
-  List<Videos> wallpapers = [];
-  late Future<List<Videos>> futureWallpapers;
-  List<Videos> favoriteWallpapers = [];
+  List<VideoItem> wallpapers = [];
+  late Future<List<VideoItem>> futureWallpapers;
+  List<VideoItem> favoriteWallpapers = [];
   int pageNumber = 1;
   bool isLoading = false;
   List<String> favorites = [];
@@ -75,7 +76,7 @@ class _MySearchState extends State<Search> {
     });
 
     try {
-      final List<Videos> newWallpapers =
+      final List<VideoItem> newWallpapers =
           await apiService.fetchWallpapers(pageNumber);
 
       setState(() {
@@ -157,9 +158,9 @@ class _MySearchState extends State<Search> {
 }
 
 class _MySearchState2 extends State<Search2> {
-  List<Videos> wallpapers = [];
-  late Future<List<Videos>> futureWallpapers;
-  List<Videos> favoriteWallpapers = [];
+  List<VideoItem> wallpapers = [];
+  late Future<List<VideoItem>> futureWallpapers;
+  List<VideoItem> favoriteWallpapers = [];
   int pageNumber = 1;
   bool isLoading = false;
   List<String> favorites = [];
@@ -182,7 +183,7 @@ class _MySearchState2 extends State<Search2> {
     });
 
     try {
-      final List<Videos> newWallpapers =
+      final List<VideoItem> newWallpapers =
           await apiService.fetchWallpapers(pageNumber);
 
       setState(() {
@@ -225,9 +226,9 @@ class _MySearchState2 extends State<Search2> {
 }
 
 class _MySearchState3 extends State<Search3> {
-  List<Videos> wallpapers = [];
-  late Future<List<Videos>> futureWallpapers;
-  List<Videos> favoriteWallpapers = [];
+  List<VideoItem> wallpapers = [];
+  late Future<List<VideoItem>> futureWallpapers;
+  List<VideoItem> favoriteWallpapers = [];
   int pageNumber = 1;
   bool isLoading = false;
   List<String> favorites = [];
@@ -250,7 +251,7 @@ class _MySearchState3 extends State<Search3> {
     });
 
     try {
-      final List<Videos> newWallpapers =
+      final List<VideoItem> newWallpapers =
           await apiService.fetchWallpapers(pageNumber);
 
       setState(() {

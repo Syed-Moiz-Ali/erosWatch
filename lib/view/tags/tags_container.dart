@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:eroswatch/model/tags/tags_card.dart';
+import 'package:eroswatch/view/tags/tags_card.dart';
 
 class TagsContainer extends StatefulWidget {
   const TagsContainer({super.key});

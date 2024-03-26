@@ -1,7 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, must_be_immutable
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:eroswatch/model/favorites/fav_card.dart';
+import 'package:eroswatch/view/favorites/fav_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FavScreen extends StatefulWidget {

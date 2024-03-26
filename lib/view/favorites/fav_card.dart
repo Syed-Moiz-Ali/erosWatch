@@ -2,13 +2,14 @@
 
 import 'dart:async';
 
+import 'package:eroswatch/models/spankbang.dart';
 import 'package:eroswatch/util/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:eroswatch/model/Stars/star_card.dart';
+import 'package:eroswatch/view/Stars/star_card.dart';
 import 'package:eroswatch/helper/videos.dart';
-import 'package:eroswatch/model/Channels/channels_card.dart';
-import 'package:eroswatch/model/card/card_screen.dart';
+import 'package:eroswatch/view/Channels/channels_card.dart';
+import 'package:eroswatch/view/card/card_screen.dart';
 
 class FavCard extends StatefulWidget {
   Future<List<Videos>>? getVideosWallpapers;
@@ -30,7 +31,7 @@ class FavCard extends StatefulWidget {
 
 class _FavCardState extends State<FavCard> {
   FilterOption _currentFilter = FilterOption.newest; // Initial filter
-  List<Videos> favoriteVideos = [];
+  List<VideoItem> favoriteVideos = [];
   List<Stars> favoriteStars = [];
   List<Channels> favoriteChannels = [];
   bool _showLoadingIndicator = true;
@@ -82,7 +83,7 @@ class _FavCardState extends State<FavCard> {
       database = ErosWatchDatabase(storageKey: widget.type, context: context);
     });
     try {
-      List<Videos> videoData;
+      List<VideoItem> videoData;
       List<Stars> starData;
       List<Channels> channelData;
 
@@ -210,7 +211,7 @@ class _FavCardState extends State<FavCard> {
     }
   }
 
-  List<Videos> _applyVideosFilter(List<Videos> favorites) {
+  List<VideoItem> _applyVideosFilter(List<VideoItem> favorites) {
     if (_currentFilter == FilterOption.oldest) {
       return favorites; // No need to modify the list for newest filter
     } else if (_currentFilter == FilterOption.longest) {

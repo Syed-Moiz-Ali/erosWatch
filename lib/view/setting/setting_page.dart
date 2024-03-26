@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+// import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingScreen extends StatefulWidget {
@@ -27,7 +27,7 @@ class _SettingScreenState extends State<SettingScreen> {
   bool isLocked = false;
   bool isNSFWToggled = false; // New variable to track NSFW switch toggle
   bool isLockedToggled = false; // New variable to track NSFW switch toggle
-  late final PackageInfo packageInfo;
+  // late final PackageInfo packageInfo;
   final String contactEmail = 'shinten812@gmail.com';
   late double getSpeed = 1.0;
   dynamic speed = 1.0;
@@ -41,18 +41,18 @@ class _SettingScreenState extends State<SettingScreen> {
     email = "test@example.com";
     phoneNumber = "+919876543210";
     isTextFieldEnabled = false;
-    fetchPackageInfoAndCheckForUpdates();
+    // fetchPackageInfoAndCheckForUpdates();
     _loadPreferences();
     _loadSelectedQuality();
     // loadUsers();
   }
 
-  Future<void> fetchPackageInfoAndCheckForUpdates() async {
-    final info = await PackageInfo.fromPlatform();
-    setState(() {
-      packageInfo = info;
-    });
-  }
+  // Future<void> fetchPackageInfoAndCheckForUpdates() async {
+  //   final info = await PackageInfo.fromPlatform();
+  //   setState(() {
+  //     packageInfo = info;
+  //   });
+  // }
 
   _loadSelectedQuality() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
